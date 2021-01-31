@@ -105,6 +105,9 @@ void Page :: ToBinary (char *bits) {
 	}
 }
 
+int Page :: GetRecordsCnt (){
+	return numRecs;
+}
 
 void Page :: FromBinary (char *bits) {
 
