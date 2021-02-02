@@ -34,6 +34,7 @@ TEST(DBFile_Test_Create, ValidCreate)
 TEST(DBFile_Test_Open, ValidOpen)
 {
 	DBFile dbfile;
+	dbfile. Create(r->path(),heap,NULL);
 	ASSERT_EQ(1, dbfile.Open( r->path()) );
 }
 
