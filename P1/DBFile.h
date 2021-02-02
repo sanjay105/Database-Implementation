@@ -16,6 +16,7 @@ class DBFile {
 	File *curFile;
 	Page *tempPage;
 	bool isFileCreated;
+	bool isFileOpened;
 	fType fileType;
 	off_t pIndex;
 public:
