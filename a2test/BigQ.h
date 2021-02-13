@@ -8,6 +8,22 @@
 
 using namespace std;
 
+
+struct TPPMSParams{
+	Pipe &in;
+	Pipe &out;
+	OrderMaker &sortorder;
+	int runlen;
+};
+
+class OrderedCompare{
+	OrderMaker &order;
+	public:
+		OrderedCompare(OrderMaker &order);
+		bool operator()(Record *a,Record *b);
+		~OrderedCompare();
+};
+
 class BigQ {
 
 public:

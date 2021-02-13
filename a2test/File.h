@@ -39,6 +39,9 @@ public:
 	// note that the record is consumed so it will have no value after
 	int Append (Record *addMe);
 
+	// returns numRecs
+	int GetRecordsCnt();
+
 	// empty it out
 	void EmptyItOut ();
 
