@@ -5,6 +5,7 @@
 #include "Pipe.h"
 #include "File.h"
 #include "Record.h"
+#include "Comparison.h"
 
 using namespace std;
 
@@ -16,11 +17,24 @@ struct TPPMSParams{
 	int runlen;
 };
 
-class OrderedCompare{
-	OrderMaker &order;
+class RecordPQ{
+	off_t offset;
+	off_t endoffset;
+	File *file;
+	Page *tempPage;
 	public:
-		OrderedCompare(OrderMaker &order);
+	Record *record;
+	RecordPQ(off_t offset,off_t endoffset,File *fp);
+	bool GetNextRecord(Record *rec);
+	~RecordPQ();
+};
+
+class OrderedCompare{
+	OrderMaker *order;
+	public:
+		OrderedCompare(OrderMaker *orders);
 		bool operator()(Record *a,Record *b);
+		bool operator()(RecordPQ *a,RecordPQ *b);
 		~OrderedCompare();
 };
 

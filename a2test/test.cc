@@ -10,6 +10,15 @@ void *producer (void *arg) {
 	int counter = 0;
 
 	DBFile dbfile;
+	cout << " DBFile will be created at " << rel->path () << endl;
+	dbfile.Create (rel->path(), heap, NULL);
+
+	char tbl_path[100]; // construct path of the tpch flat text file
+	sprintf (tbl_path, "%s%s.tbl", tpch_dir, rel->name()); 
+	cout << " tpch file will be loaded from " << tbl_path << endl;
+
+	dbfile.Load (*(rel->schema ()), tbl_path);
+	dbfile.Close();
 	dbfile.Open (rel->path ());
 	cout << " producer: opened DBFile " << rel->path () << endl;
 	dbfile.MoveFirst ();
@@ -145,7 +154,16 @@ int main (int argc, char *argv[]) {
 	int runlen;
 	cout << "\t\n specify runlength:\n\t ";
 	cin >> runlen;
-	
+	// DBFile dbfile;
+	// cout << " DBFile will be created at " << rel->path () << endl;
+	// dbfile.Create (rel->path(), heap, NULL);
+
+	// char tbl_path[100]; // construct path of the tpch flat text file
+	// sprintf (tbl_path, "%s%s.tbl", tpch_dir, rel->name()); 
+	// cout << " tpch file will be loaded from " << tbl_path << endl;
+
+	// dbfile.Load (*(rel->schema ()), tbl_path);
+	// dbfile.Close ();
 	test1 (tindx, runlen);
 
 	cleanup ();
