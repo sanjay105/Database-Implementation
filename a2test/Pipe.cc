@@ -39,13 +39,18 @@ Pipe :: ~Pipe () {
 }
 
 
-void Pipe :: Insert (Record *insertMe) {
+int Pipe :: GetDone(){
+	return done;
+}
 
+void Pipe :: Insert (Record *insertMe) {
+	// cout<<"I'm Here"<<endl;
 	// first, get a mutex on the pipeline
 	pthread_mutex_lock (&pipeMutex);
 
 	// next, see if there is space in the pipe for more data; if
 	// there is, then do the insertion
+	// cout<<lastSlot<<" "<<firstSlot<<" "<<totSpace<<endl;
 	if (lastSlot - firstSlot < totSpace) {
 		buffered [lastSlot % totSpace].Consume (insertMe);
 
@@ -58,7 +63,7 @@ void Pipe :: Insert (Record *insertMe) {
 	
 	// note that we have added a new record
 	lastSlot++;
-
+	// cout<<"lastslot "<<lastSlot<<endl;
 	// signal the consumer who might now want to suck up the new
 	// record that has been added to the pipeline
 	pthread_cond_signal (&consumerVar);

@@ -35,6 +35,7 @@ void *producer (void *arg) {
 	myPipe->ShutDown ();
 
 	cout << " producer: inserted " << counter << " recs into the pipe\n";
+	return NULL;
 }
 
 void *consumer (void *arg) {
@@ -56,8 +57,9 @@ void *consumer (void *arg) {
 
 	Record rec[2];
 	Record *last = NULL, *prev = NULL;
-
+	// cout<<"Inside Consumer Pipe Status "<<t->pipe->GetDone()<<endl;
 	while (t->pipe->Remove (&rec[i%2])) {
+		// cout<<"Consumer: Inside While"<<endl;
 		prev = last;
 		last = &rec[i%2];
 
@@ -73,6 +75,7 @@ void *consumer (void *arg) {
 			last->Print (rel->schema ());
 		}
 		i++;
+		// cout<<"i: "<<i<<endl;
 	}
 
 	cout << " consumer: removed " << i << " recs from the pipe\n";
@@ -88,6 +91,8 @@ void *consumer (void *arg) {
 	if (err) {
 		cerr << " consumer: " <<  err << " recs failed sorted order test \n" << endl;
 	}
+	
+	return NULL;
 }
 
 
@@ -115,7 +120,7 @@ void test1 (int option, int runlen) {
 		tutil.write = true;
 	}
 	pthread_create (&thread2, NULL, consumer, (void *)&tutil);
-
+	
 	BigQ bq (input, output, sortorder, runlen);
 
 	pthread_join (thread1, NULL);

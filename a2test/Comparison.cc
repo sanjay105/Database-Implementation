@@ -117,7 +117,33 @@ void OrderMaker :: Print () {
 	}
 }
 
+int CNF :: GetSortOrderByOne (OrderMaker &order) {
 
+	order.numAtts = 0;
+
+	for (int i = 0; i < numAnds; i++) {
+
+		if (orLens[i] != 1) {
+			continue;
+		}
+
+		if (orList[i][0].op != Equals) {
+			continue;
+		}
+
+		if (orList[i][0].operand1 == Right || orList[i][0].operand2 == Right) {
+			return 0;
+		}
+
+		order.whichAtts[order.numAtts] = orList[i][0].whichAtt1;
+		order.whichTypes[order.numAtts] = orList[i][0].attType;
+
+		order.numAtts++;
+	}
+
+	return order.numAtts;
+
+}
 
 int CNF :: GetSortOrders (OrderMaker &left, OrderMaker &right) {
 

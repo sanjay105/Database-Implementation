@@ -45,6 +45,8 @@ public:
 	// and a zero if there are no more records in the pipeline
 	int Remove (Record *removeMe);
 
+	int GetDone();
+
 	// shut down the pipepine; used by the consumer to signal that 
 	// there is no more data that is going to be added into the pipe
 	void ShutDown ();

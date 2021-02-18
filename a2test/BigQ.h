@@ -6,16 +6,18 @@
 #include "File.h"
 #include "Record.h"
 #include "Comparison.h"
+#include <bits/stdc++.h>
 
 using namespace std;
 
 
 struct TPPMSParams{
-	Pipe &in;
-	Pipe &out;
+	Pipe &in,&out;
+	// vector<Pipe *> pipes;
 	OrderMaker &sortorder;
 	int runlen;
 };
+
 
 class RecordPQ{
 	off_t offset;
