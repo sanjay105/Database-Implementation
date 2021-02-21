@@ -11,7 +11,7 @@
 using namespace std;
 
 
-struct TPPMSParams{
+struct TPMMSParams{
 	Pipe &in,&out;
 	// vector<Pipe *> pipes;
 	OrderMaker &sortorder;

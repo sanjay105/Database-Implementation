@@ -38,7 +38,7 @@ Pipe :: ~Pipe () {
 	
 }
 
-
+// Returns 1 if pipe is closed
 int Pipe :: GetDone(){
 	return done;
 }
