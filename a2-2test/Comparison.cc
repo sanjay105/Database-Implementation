@@ -2,7 +2,6 @@
 #include <iostream>
 #include <stdlib.h>
 #include <string.h>
-
 #include "Comparison.h"
 
 
@@ -62,6 +61,17 @@ void Comparison :: Print () {
 		cout << "(String)";
 }
 
+CompOperator Comparison :: GetCompOperator(){
+	return op;
+}
+
+Target Comparison :: GetOperand1(){
+	return operand1;
+}
+
+Target Comparison :: GetOperand2(){
+	return operand2;
+}
 
 
 
@@ -116,6 +126,45 @@ void OrderMaker :: Print () {
 			printf("String\n");
 	}
 }
+
+void OrderMaker::PrintOrderMakerToStream (std :: ofstream &md){
+	for (int i = 0; i < numAtts; i++)
+	{
+		md << whichAtts[i] << " ";
+		
+		if (whichTypes[i] == Int) {
+			
+			md << "Int" << endl;
+			
+		} else if (whichTypes[i] == Double) {
+			
+			md << "Double" << endl;
+			
+		} else {
+			
+			md << "String" << endl;
+			
+		}
+		
+	}
+}
+
+int OrderMaker :: AttributeCount(){
+	return numAtts;
+}
+
+void OrderMaker :: SetAttributeCount(int numAtts){
+	this->numAtts = numAtts;
+}
+
+void OrderMaker :: AddAttributeNum(int index,int attNum){
+	this->whichAtts[index] = attNum;
+}
+
+void OrderMaker :: AddAttributeType(int index,Type attType){
+	this->whichTypes[index] = attType;
+}
+
 
 int CNF :: GetSortOrderByOne (OrderMaker &order) {
 
@@ -641,3 +690,18 @@ void CNF :: GrowFromParseTree (struct AndList *parseTree, Schema *mySchema,
 }
 
 
+int CNF :: GetNumAnds(){
+	return numAnds;
+}
+
+int CNF :: GetorLens(int index){
+	return this->orLens[index];
+}
+
+void CNF :: SetorLens(int index, int val){
+	this->orLens[index] = val;
+}
+
+Comparison CNF :: GetorList(int x,int y){
+	return this->orList[x][y];
+}
