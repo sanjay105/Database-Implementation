@@ -24,10 +24,13 @@ HeapDBFile :: ~HeapDBFile(){
 }
 
 int HeapDBFile :: Create(const char *f_path){
+    // cout<<"HeapDBFile:: Create : Start"<<endl;
     tempPage->EmptyItOut();
     curFile->Open(0,(char* )f_path); //ytd
     isFileCreated = true;
     pIndex = 0;
+    // cout<<"HeapDBFile:: Create : End"<<endl;
+    return 1;
 }
 
 void HeapDBFile :: Load (Schema &f_schema, const char *loadpath) {
@@ -75,31 +78,32 @@ void HeapDBFile::MoveFirst () {
 int HeapDBFile::Close () {
     // cout<<"Start of Close Function"<<endl;
 
-    if(isFileOpened && tempPage -> GetRecordsCnt() > 0){
+    if( tempPage -> GetRecordsCnt() > 0){
         isFileOpened = false;
         curFile -> AddPage(tempPage, pIndex);
         tempPage -> EmptyItOut();
     }
-    if(!isFileOpened){
-        return 0;
-    }
+    // if(!isFileOpened){
+    //     return 0;
+    // }
 
     curFile->Close();
     
     // cout<<"End of Close Function"<<endl;
     return 1;
 }
-
+int heapcnt = 0;
 void HeapDBFile::Add (Record &rec) {
-    // cout<<"Start of Add Function"<<endl;
+    // cout<<"HeapDBFile::Add : Start"<<endl;
 
     if(!tempPage -> Append(&rec)){
         curFile->AddPage(tempPage,pIndex++);
         tempPage ->EmptyItOut();
         tempPage ->Append(&rec);
+        // cout<<"HeapDBFile::Add : IF"<<endl;
     }
-
-    // cout<<"End of Add Function"<<endl;
+    heapcnt++;
+    // cout<<"HeapDBFile::Add : End count "<<heapcnt<<endl;
 }
 
 int HeapDBFile::GetNext (Record &fetchme) {
@@ -146,36 +150,43 @@ int HeapDBFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
 
 
 SortedDBFile :: SortedDBFile(OrderMaker *o,int runlen){
-    this->bufSize = 100;
-    this->runlen = runlen;
-    this->o = o;
     this->query = NULL;
     this->bq = NULL;
-    this->tempPage = new Page();
     this->curFile = new File();
+    this->tempPage = new Page();
+    this->o = o;
+    this->bufSize = 1000;
+    this->runlen = runlen;
+    
+    
 }
 
 SortedDBFile :: ~SortedDBFile(){
     delete query;
-    delete tempPage;
-    delete bq;
     delete curFile;
-    delete o;
+    delete tempPage;
+    // delete bq;
+    
+    // delete o;
 }
 
 int SortedDBFile :: Create(const char *f_path){
-    this->fpath = new char[100];
-    strcpy(this->fpath, fpath);
-    tempPage->EmptyItOut();
     writeMode = false;
     pIndex = 0;
+    this->fpath = (char *)f_path;
+    // strcpy(this->fpath, f_path);
+    tempPage->EmptyItOut();
+    
+    
     curFile->Open(0,this->fpath);
+    // cout<<"in SortedDBFile this path "<<this->fpath<<endl;
     return 1;
 }
 
 void SortedDBFile :: Load (Schema &f_schema, const char *loadpath) {
-    Record tempRecord;
+    
     FILE *tFile = fopen(loadpath,"r");
+    Record tempRecord;
     if(tFile == NULL){
         cerr << "Cannot open the file"<<endl;
         exit(0);
@@ -189,12 +200,16 @@ void SortedDBFile :: Load (Schema &f_schema, const char *loadpath) {
 }
 
 int SortedDBFile::Open (const char *f_path) {
-    this->fpath = new char[100];
-    strcpy(this->fpath, fpath);
-    tempPage->EmptyItOut();
     writeMode = false;
     pIndex = 0;
+    this->fpath = (char *)f_path;
+    // strcpy(this->fpath, fpath);
+    tempPage->EmptyItOut();
+    
+    
+    // cout<<"SORTED::Open : Before Open func"<<endl;
     curFile->Open(1,this->fpath);
+    // cout<<"SORTED::Open : After Open func"<<endl;
     if(curFile->GetLength()>0){
         curFile->GetPage(tempPage,pIndex);
     }
@@ -218,32 +233,43 @@ void SortedDBFile::MoveFirst () {
 
 int SortedDBFile::Close () {
     if(writeMode){
+        // cout<<"SORTED:: Close : before Merge"<<endl;
         MergeBigQToFile();
+        // cout<<"SORTED:: Close : After Merge"<<endl;
     }
+    // cout<<"SORTED:: Close : before file close"<<endl;
     curFile->Close();
+    // cout<<"SORTED:: Close : After file close"<<endl;
     return 1;
 }
 
 void SortedDBFile::Add (Record &rec) {
+    // cout<<"SORTED:: ADD : Start"<<endl;
     if(!writeMode){
+        // cout<<"SORTED:: ADD : InitalizeBigQ"<<endl;
         InitializeBigQ ();
     }
     inpipe->Insert(&rec);
+    // cout<<"SORTED:: ADD : End "<<endl;
 }
 
 int SortedDBFile::GetNext (Record &fetchRec) {
+    // cout<<"SORTED::GetNext : start"<<endl;
     if(writeMode){
         MergeBigQToFile();
     }
     if(tempPage->GetFirst(&fetchRec)){
+        // cout<<"SORTED::GetNext : return 1"<<endl;
         return 1;
     }else{
         pIndex++;
         if(pIndex<curFile->GetLength()-1){
             curFile->GetPage(tempPage,pIndex);
             tempPage->GetFirst(&fetchRec);
+            // cout<<"SORTED::GetNext : return 1"<<endl;
             return 1;
         }else{
+            // cout<<"SORTED::GetNext : return 0"<<endl;
             return 0;
         }
     }
@@ -256,6 +282,7 @@ int SortedDBFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
         MergeBigQToFile();
     }
     ComparisonEngine compEng;
+    // cout<<"SORTED:: GetNext : start"<<endl;
     if(!query){
         if (QueryOrderGenerator (*query, *o, cnf) > 0) {
 			// query generated successfully
@@ -281,7 +308,7 @@ int SortedDBFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
 		}
     }else{
         // query exists
-		if (query->AttributeCount() == 0) {
+		if (query->numAtts == 0) {
 			// invalid query
 			return GetNextSequential (fetchme, cnf, literal);
 			
@@ -295,21 +322,26 @@ int SortedDBFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
 }
 
 void SortedDBFile :: MergeBigQToFile(){
-    writeMode = false;
+    
     inpipe->ShutDown();
+    writeMode = false;
     if(curFile->GetLength()>0){
         MoveFirst();
     }
-
+    // cout<<"SORTED:: MergeBigQToFile : after MoveFirst : curFile Len "<<curFile->GetLength()<<endl;
+    Record *fromPipe = new Record;
     Record *fromFile = new Record;
     HeapDBFile *newHeap = new HeapDBFile;
-    Record *fromPipe = new Record;
+    
     ComparisonEngine compEng;
 
-    newHeap->Create("bin/temp.bin");
+    newHeap->Create("temp.bin");
+    // cout<<"SORTED:: MergeBigQToFile : before GetNext"<<endl;
     int flagFile = GetNext(*fromFile);
+    // cout<<"SORTED:: MergeBigQToFile : after GetNext"<<endl;
     int flagPipe = outpipe->Remove(fromPipe);
-
+    // cout<<"SORTED:: MergeBigQToFile : before while"<<endl;
+    int cnt = 0;
     while(flagFile&&flagPipe){
         if(compEng.Compare(fromPipe,fromFile,o)> 0){
             newHeap->Add(*fromFile);
@@ -318,33 +350,44 @@ void SortedDBFile :: MergeBigQToFile(){
             newHeap->Add(*fromPipe);
             flagPipe = outpipe->Remove(fromPipe);
         }
+        cout<<cnt<<endl;
+        cnt++;
     }
     while(flagFile){
         newHeap->Add(*fromFile);
         flagFile = GetNext(*fromFile);
+        cnt++;
+        // cout<<"FROM FILE: "<<cnt<<endl;
     }
     while(flagPipe){
         newHeap->Add(*fromPipe);
+        // cout<<"BEFORE PIPE: "<<cnt<<endl;
         flagPipe = outpipe->Remove(fromPipe);
+        // cout<<"Flag Pipe "<<flagPipe<<endl;
+        cnt++;
+        // cout<<"FROM PIPE: "<<cnt<<endl;
     }
+    // cout<<"SORTED:: MergeBigQToFile : after while and records added "<<cnt<<endl;
+    // outpipe->ShutDown();
     newHeap->Close();
-    outpipe->ShutDown();
+    delete newHeap;
     curFile->Close();
     remove(fpath);
-    rename("bin/temp.bin",fpath);
+    rename("temp.bin",fpath);
     curFile->Open(1,fpath);
     MoveFirst();
-    delete newHeap;
+    
     
 }
 
 int SortedDBFile :: QueryOrderGenerator (OrderMaker &query, OrderMaker &order, CNF &cnf){
+    // cout<<"SORTED:: QueryOrderGenerator : start"<<endl;
     query.SetAttributeCount(0);
 	bool gotIt = false;
 	
 	for (int i = 0; i < order.AttributeCount(); ++i) {
 		for (int j = 0; j < cnf.GetNumAnds(); ++j) {
-			if ((cnf.GetorLens(j) != 1 || cnf.orList[j][0].op != Equals)||
+			if (cnf.GetorLens(j) != 1 || cnf.orList[j][0].op != Equals ||
                (cnf.orList[i][0].operand1 == Left && cnf.orList[i][0].operand2 == Left) ||
                (cnf.orList[i][0].operand2 == Right && cnf.orList[i][0].operand1 == Right) ||
                (cnf.orList[i][0].operand1==Left && cnf.orList[i][0].operand2 == Right) ||
@@ -374,6 +417,7 @@ int SortedDBFile :: QueryOrderGenerator (OrderMaker &query, OrderMaker &order, C
 }
 
 int SortedDBFile :: BinarySearch(Record &fetchme, CNF &cnf, Record &literal){
+    // cout<<"SORTED:: BinarySearch : start"<<endl;
     off_t first = pIndex;
 	off_t last = curFile->GetLength () - 1;
 	off_t mid = pIndex;
@@ -408,6 +452,7 @@ int SortedDBFile :: BinarySearch(Record &fetchme, CNF &cnf, Record &literal){
 }
 
 int SortedDBFile :: GetNextSequential (Record &fetchme, CNF &cnf, Record &literal){
+    // cout<<"SORTED:: GetNextSequential : start"<<endl;
     ComparisonEngine compEng;
 	while (GetNext (fetchme)) {
 		if (compEng.Compare (&fetchme, &literal, &cnf)){
@@ -418,6 +463,7 @@ int SortedDBFile :: GetNextSequential (Record &fetchme, CNF &cnf, Record &litera
 }
 
 int SortedDBFile :: GetNextWithQuery (Record &fetchme, CNF &cnf, Record &literal){
+    // cout<<"SORTED:: GetNextWithQuery : start"<<endl;
     ComparisonEngine compEng;
 	while (GetNext (fetchme)) {
 		if (!compEng.Compare (&literal, query, &fetchme, o)){
@@ -435,8 +481,11 @@ void SortedDBFile :: InitializeBigQ (){
     writeMode = true;
     inpipe = new Pipe(bufSize);
     outpipe = new Pipe(bufSize);
-
+    // cout<<"SORTED:: InitializeBigQ : Start"<<endl;
     bq = new BigQ(*inpipe,*outpipe,*o,runlen);
+    // pthread_create(&workerThread, NULL, StartMainThread, (void *)this);
+	// pthread_join(workerThread,NULL);
+    // cout<<"SORTED:: InitializeBigQ : End"<<endl;
 }
 
 // Constructor: initializes File and Page objects
@@ -458,12 +507,6 @@ int DBFile::Create (const char *f_path, fType f_type, void *startup) {
     if (f_type == heap){
         fs << "heap" << endl;
         curDBObject = new HeapDBFile;
-        // tempPage->EmptyItOut();
-        // curFile->Open(0,(char* )f_path); //ytd
-        // isFileCreated = true;
-        // fileType = f_type;
-        // pIndex = 0;
-        
 
     }else if(f_type = sorted){
         
@@ -496,6 +539,7 @@ void DBFile::Load (Schema &f_schema, const char *loadpath) {
 int DBFile::Open (const char *f_path) {
     ifstream fs;
     string fname = f_path;
+    // cout<<"In DBFILE OPEN START"<<endl;
     fs.open(fname+".tmp");
     if(fs.is_open()){
         string ftype;
@@ -503,15 +547,19 @@ int DBFile::Open (const char *f_path) {
         if(ftype == "heap"){
             curDBObject = new HeapDBFile;
         }else if (ftype == "sorted"){
+            // cout<<"In DBFILE OPEN START : SORTED"<<endl;
             int runlen,numAtts;
-            OrderMaker *order;
+            OrderMaker *order = new OrderMaker;
             fs >> runlen;
             fs >> numAtts;
-            order->SetAttributeCount(numAtts);
+            // cout<<"DBFILE::OPEN : runlen "<<runlen<<" numAtts "<<numAtts<<endl;
+            order->numAtts = numAtts;
+            // cout<<"DBFILE::OPEN : runlen "<<runlen<<" numAtts "<<numAtts<<endl;
             for( int i=0 ;i < numAtts; i++){
                 int attributeNum;
                 string attDType;
                 fs >> attributeNum >> attDType;
+                // cout<<"DBFILE::OPEN Attributes "<<attributeNum<<" "<<attDType<<endl;
                 order->AddAttributeNum(i,attributeNum);
                 if(attDType == "Int"){
                     order->AddAttributeType(i,Int);

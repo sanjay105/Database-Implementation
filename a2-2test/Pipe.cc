@@ -119,7 +119,7 @@ int Pipe :: Remove (Record *removeMe) {
 
 
 void Pipe :: ShutDown () {
-
+	// cout<<"Shutdown Initiated "<<done<<endl;
 	// first, get a mutex on the pipeline
         pthread_mutex_lock (&pipeMutex);
 
@@ -131,5 +131,5 @@ void Pipe :: ShutDown () {
 
 	// unlock the mutex
 	pthread_mutex_unlock (&pipeMutex);
-	
+	// cout<<"Shutdown Sucessfull "<<done<<endl;
 }

@@ -6,19 +6,23 @@ void test2 ();
 void test3 ();
 
 int add_data (FILE *src, int numrecs, int &res) {
+	//cout<<"In add_data start"<<endl;
 	DBFile dbfile;
 	dbfile.Open (rel->path ());
 	Record temp;
-
+	//cout<<"In Add Data after dbfile open"<<endl;
 	int proc = 0;
 	int xx = 20000;
+	// numrecs = 150001;
 	while ((res = temp.SuckNextRecord (rel->schema (), src)) && ++proc < numrecs) {
 		dbfile.Add (temp);
 		if (proc == xx) cerr << "\t ";
 		if (proc % xx == 0) cerr << ".";
+		//cout<<"add_data: Added record"<<endl;
 	}
-
+	//cout<<"add_data after while"<<endl;
 	dbfile.Close ();
+	//cout<<"After dbfile close"<<endl;
 	return proc;
 }
 
@@ -27,32 +31,38 @@ int add_data (FILE *src, int numrecs, int &res) {
 void test1 () {
 
 	int runlen = 0;
+	
+	OrderMaker o;
+	rel->get_sort_order (o);
+	cin.clear();
+	clearerr(stdin);
 	while (runlen < 1) {
 		cout << "\t\n specify runlength:\n\t ";
 		cin >> runlen;
 	}
-	OrderMaker o;
-	rel->get_sort_order (o);
-
 	
 	struct {OrderMaker *o; int l;} startup = {&o, runlen};
 
 	DBFile dbfile;
 	cout << "\n output to dbfile : " << rel->path () << endl;
 	dbfile.Create (rel->path(), sorted, &startup);
-	dbfile.Close ();
-
 	char tbl_path[100];
 	sprintf (tbl_path, "%s%s.tbl", tpch_dir, rel->name()); 
+	// dbfile.Load (*(rel->schema ()), tbl_path);
+	dbfile.Close ();
+
+	
 	cout << " input from file : " << tbl_path << endl;
 
         FILE *tblfile = fopen (tbl_path, "r");
-
+	//cout<<"AFTER TBLFILE OPEN"<<endl;
 	srand48 (time (NULL));
-
+	//cout<<" AFTER SRAND"<<endl;
 	int proc = 1, res = 1, tot = 0;
+	cin.clear();
+	clearerr(stdin);
 	while (proc && res) {
-		int x = 1;
+		int x = 0;
 		while (x < 1 || x > 3) {
 			cout << "\n select option for : " << rel->path () << endl;
 			cout << " \t 1. add a few (1 to 1k recs)\n";
@@ -62,11 +72,13 @@ void test1 () {
 			// string temp;
 			// getline(cin,temp);
 			// x = stoi(temp);
-			// cout<<"After cin x: "<<x<<endl;
+			// //cout<<"After cin x: "<<x<<endl;
 
 		}
 		if (x < 3) {
+			//cout<<"Before ADD data"<<endl;
 			proc = add_data (tblfile,lrand48()%(int)pow(1e3,x)+(x-1)*1000, res);
+			//cout<<"After ADD data "<<proc<<endl;
 			tot += proc;
 			if (proc) 
 				cout << "\n\t added " << proc << " recs..so far " << tot << endl;
