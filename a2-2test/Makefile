@@ -64,4 +64,4 @@ clean:
 	rm -f y.tab.c
 	rm -f lex.yy.c
 	rm -f y.tab.h
-	rm -f *.bin.*
+	rm -f *.bin*

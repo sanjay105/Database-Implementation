@@ -282,27 +282,28 @@ int SortedDBFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
         MergeBigQToFile();
     }
     ComparisonEngine compEng;
-    // cout<<"SORTED:: GetNext : start"<<endl;
+    cout<<"SORTED:: GetNext : start"<<endl;
     if(!query){
+        query = new OrderMaker;
         if (QueryOrderGenerator (*query, *o, cnf) > 0) {
 			// query generated successfully
-			// cout << "Query Gen Success! Go Bin Search!" << endl;
+			cout << "Query Gen Success! Go Bin Search!" << endl;
 			query->Print ();
 			if (BinarySearch (fetchme, cnf, literal)) {
-				// cout << "Found!" << endl;
+				cout << "Found!" << endl;
 				// Found
 				return 1;
 				
 			} else {
 				// binary search fails
-				// cout << "Not Found!" << endl;
+				cout << "Not Found!" << endl;
 				return 0;
 				
 			}
 			
 		} else {
 			//query generated but is empty
-			// cout << "Query Gen fail! Go Sequential!" << endl;
+			cout << "Query Gen fail! Go Sequential!" << endl;
 			return GetNextSequential (fetchme, cnf, literal);
 			
 		}
@@ -381,13 +382,14 @@ void SortedDBFile :: MergeBigQToFile(){
 }
 
 int SortedDBFile :: QueryOrderGenerator (OrderMaker &query, OrderMaker &order, CNF &cnf){
-    // cout<<"SORTED:: QueryOrderGenerator : start"<<endl;
-    query.SetAttributeCount(0);
+    cout<<"SORTED:: QueryOrderGenerator : start query "<<&query<<endl;
+    // query.SetAttributeCount(0);
+    query.numAtts = 0;
 	bool gotIt = false;
 	
-	for (int i = 0; i < order.AttributeCount(); ++i) {
-		for (int j = 0; j < cnf.GetNumAnds(); ++j) {
-			if (cnf.GetorLens(j) != 1 || cnf.orList[j][0].op != Equals ||
+	for (int i = 0; i < order.numAtts; ++i) {
+		for (int j = 0; j < cnf.numAnds; ++j) {
+			if (cnf.orLens[j] != 1 || cnf.orList[j][0].op != Equals ||
                (cnf.orList[i][0].operand1 == Left && cnf.orList[i][0].operand2 == Left) ||
                (cnf.orList[i][0].operand2 == Right && cnf.orList[i][0].operand1 == Right) ||
                (cnf.orList[i][0].operand1==Left && cnf.orList[i][0].operand2 == Right) ||
@@ -404,7 +406,7 @@ int SortedDBFile :: QueryOrderGenerator (OrderMaker &query, OrderMaker &order, C
 			if (cnf.orList[j][0].operand2 == Left && cnf.orList[j][0].whichAtt2 == order.whichAtts[i]) {
 				query.whichAtts[query.numAtts] = cnf.orList[i][0].whichAtt1;
 				query.whichTypes[query.numAtts] = cnf.orList[i][0].attType;
-				query.SetAttributeCount(query.AttributeCount()+1);	
+				query.numAtts++;	
 				gotIt = true;
 				break;
 			}
@@ -413,7 +415,8 @@ int SortedDBFile :: QueryOrderGenerator (OrderMaker &query, OrderMaker &order, C
 			break;
 		}
 	}
-	return query.AttributeCount();
+    cout<<"SORTED:: QueryOrderGenerator : End NumAtts "<<query.numAtts<<endl;
+	return query.numAtts;
 }
 
 int SortedDBFile :: BinarySearch(Record &fetchme, CNF &cnf, Record &literal){
