@@ -81,7 +81,7 @@ private:
     priority_queue<Run*, vector<Run*>, Compare> runQueue;
     OrderMaker *sortorder;
 	
-	bool WriteRunToFile (int runLocation);
+    bool WriteRunToFile ();
     void AddRunToQueue (int runSize, int pageOffset);
     friend bool comparer (Record* left, Record* right);
 
@@ -94,14 +94,14 @@ public:
 	BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen);
 	~BigQ () {};
 	
-	void SortRecordList();
-    void MergeRuns ();
+	void SortsListOfRecord();
+    void CombineRuns ();
 	
     static void *StartMainThread (void *start) {
 		
         BigQ *bigQ = (BigQ *)start;
-        bigQ->SortRecordList ();
-        bigQ->MergeRuns ();
+        bigQ->SortsListOfRecord ();
+        bigQ->CombineRuns ();
 		return NULL;
     }
 	
