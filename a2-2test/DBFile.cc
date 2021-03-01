@@ -57,7 +57,7 @@ void HeapDBFile :: Load (Schema &f_schema, const char *loadpath) {
 }
 
 int HeapDBFile::Open (const char *f_path) {
-    cout<<f_path<<endl;
+    // cout<<f_path<<endl;
     pIndex = 0;
     curFile->Open(1,(char* )f_path);
     tempPage -> EmptyItOut();
@@ -282,28 +282,28 @@ int SortedDBFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
         MergeBigQToFile();
     }
     ComparisonEngine compEng;
-    cout<<"SORTED:: GetNext : start"<<endl;
+    // cout<<"SORTED:: GetNext : start"<<endl;
     if(!query){
         query = new OrderMaker;
         if (QueryOrderGenerator (*query, *o, cnf) > 0) {
 			// query generated successfully
-			cout << "Query Gen Success! Go Bin Search!" << endl;
+			// cout << "Query Gen Success! Go Bin Search!" << endl;
 			query->Print ();
 			if (BinarySearch (fetchme, cnf, literal)) {
-				cout << "Found!" << endl;
+				// cout << "Found!" << endl;
 				// Found
 				return 1;
 				
 			} else {
 				// binary search fails
-				cout << "Not Found!" << endl;
+				// cout << "Not Found!" << endl;
 				return 0;
 				
 			}
 			
 		} else {
 			//query generated but is empty
-			cout << "Query Gen fail! Go Sequential!" << endl;
+			// cout << "Query Gen fail! Go Sequential!" << endl;
 			return GetNextSequential (fetchme, cnf, literal);
 			
 		}
@@ -351,7 +351,7 @@ void SortedDBFile :: MergeBigQToFile(){
             newHeap->Add(*fromPipe);
             flagPipe = outpipe->Remove(fromPipe);
         }
-        cout<<cnt<<endl;
+        // cout<<cnt<<endl;
         cnt++;
     }
     while(flagFile){
@@ -382,7 +382,7 @@ void SortedDBFile :: MergeBigQToFile(){
 }
 
 int SortedDBFile :: QueryOrderGenerator (OrderMaker &query, OrderMaker &order, CNF &cnf){
-    cout<<"SORTED:: QueryOrderGenerator : start query "<<&query<<endl;
+    // cout<<"SORTED:: QueryOrderGenerator : start query "<<&query<<endl;
     // query.SetAttributeCount(0);
     query.numAtts = 0;
 	bool gotIt = false;
@@ -415,7 +415,7 @@ int SortedDBFile :: QueryOrderGenerator (OrderMaker &query, OrderMaker &order, C
 			break;
 		}
 	}
-    cout<<"SORTED:: QueryOrderGenerator : End NumAtts "<<query.numAtts<<endl;
+    // cout<<"SORTED:: QueryOrderGenerator : End NumAtts "<<query.numAtts<<endl;
 	return query.numAtts;
 }
 
@@ -505,6 +505,9 @@ int DBFile::Create (const char *f_path, fType f_type, void *startup) {
     // cout<<"Start of Create Function"<<endl;
     ofstream fs;
     string fname = f_path;
+    if(fname.size()==0){
+        return -1;
+    }
     fs.open(fname+".tmp");
 
     if (f_type == heap){
