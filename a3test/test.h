@@ -201,6 +201,8 @@ void setup () {
 	r = new relation (region, new Schema (catalog_path, region), dbfile_dir);
 	o = new relation (orders, new Schema (catalog_path, orders), dbfile_dir);
 	c = new relation (customer, new Schema (catalog_path, customer), dbfile_dir);
+
+	cout<<"test.h : SETUP DONE"<<endl;
 }
 
 void cleanup () {

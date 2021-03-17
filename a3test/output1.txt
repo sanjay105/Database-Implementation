@@ -1,0 +1,29 @@
+ 
+** IMPORTANT: MAKE SURE THE INFORMATION BELOW IS CORRECT **
+ catalog location: 	catalog
+ tpch files dir: 	/home/sanjay/Documents/Database-Implementation/git/tpch-dbgen/
+ heap files dir: 	
+*************************************************************************************************************************************************************************
+ 
+** IMPORTANT: MAKE SURE THE INFORMATION BELOW IS CORRECT **
+ catalog location: 	catalog
+ tpch files dir: 	/home/sanjay/Documents/Database-Implementation/git/tpch-dbgen/
+ heap files dir: 	
+*************************************************************************************************************************************************************************
+ 
+** IMPORTANT: MAKE SURE THE INFORMATION BELOW IS CORRECT **
+ catalog location: 	catalog
+ tpch files dir: 	/home/sanjay/Documents/Database-Implementation/git/tpch-dbgen/
+ heap files dir: 	
+*************************************************************************************************************************************************************************
+ 
+** IMPORTANT: MAKE SURE THE INFORMATION BELOW IS CORRECT **
+ catalog location: 	catalog
+ tpch files dir: 	/home/sanjay/Documents/Database-Implementation/git/tpch-dbgen/
+ heap files dir: 	
+*************************************************************************************************************************************************************************
+ 
+** IMPORTANT: MAKE SURE THE INFORMATION BELOW IS CORRECT **
+ catalog location: 	catalog
+ tpch files dir: 	/home/sanjay/Documents/Database-Implementation/git/tpch-dbgen/
+ heap files dir: 	

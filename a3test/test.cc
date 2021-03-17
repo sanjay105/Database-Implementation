@@ -55,9 +55,11 @@ int nAtts = 4;
 int rAtts = 3;
 
 void init_SF_ps (char *pred_str, int numpgs) {
+	cout<<"init_SF_ps : START"<<endl;
 	dbf_ps.Open (ps->path());
 	get_cnf (pred_str, ps->schema (), cnf_ps, lit_ps);
 	SF_ps.Use_n_Pages (numpgs);
+	cout<<"init_SF_ps : END"<<endl;
 }
 
 void init_SF_p (char *pred_str, int numpgs) {
