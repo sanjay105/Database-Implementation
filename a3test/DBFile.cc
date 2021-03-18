@@ -515,13 +515,15 @@ void DBFile::Load (Schema &f_schema, const char *loadpath) {
 int DBFile::Open (const char *f_path) {
     ifstream fs;
     string fname = f_path;
-    // cout<<"In DBFILE OPEN START"<<endl;
+    // cout<<"In DBFILE OPEN START fname : "<<fname<<endl;
     fs.open(fname+".tmp");
     if(fs.is_open()){
         string ftype;
         fs >> ftype;
         if(ftype == "heap"){
+            cout<<"Heap"<<endl;
             curDBObject = new HeapDBFile;
+            curDBObject->Open(f_path);
         }else if (ftype == "sorted"){
             // cout<<"In DBFILE OPEN START : SORTED"<<endl;
             int runlen,numAtts;
@@ -550,15 +552,18 @@ int DBFile::Open (const char *f_path) {
                 }
             }
             curDBObject = new SortedDBFile(order,runlen);
+            curDBObject->Open(f_path);
         }else{
             cout<<"Invalid File type";
             return 0;
         }
     }else{
+        curDBObject = new HeapDBFile;
+        curDBObject->Open(f_path);
         fs.close();
         return 0;
     }
-    curDBObject->Open(f_path);
+    // curDBObject->Open(f_path);
     fs.close();
     return 1;
 }
