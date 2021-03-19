@@ -472,3 +472,64 @@ int Record :: Size(){
 	return ((int*) bits)[0];
 }
 
+void Record :: WriteToFile (Schema *mySchema, FILE *outFile){
+
+	int n = mySchema->GetNumAtts();
+	Attribute *atts = mySchema->GetAtts();
+
+	// loop through all of the attributes
+	for (int i = 0; i < n; i++) {
+
+		// print the attribute name
+		// cout << atts[i].name << ": ";
+		fprintf(outFile,"%s:",atts[i].name);
+
+		// use the i^th slot at the head of the record to get the
+		// offset to the correct attribute in the record
+		int pointer = ((int *) bits)[i + 1];
+
+		// here we determine the type, which given in the schema;
+		// depending on the type we then print out the contents
+		// cout << "[";
+		fprintf(outFile,"[");
+
+		// first is integer
+		if (atts[i].myType == Int) {
+			int *myInt = (int *) &(bits[pointer]);
+			// cout << *myInt;	
+			fprintf(outFile,"%d",*myInt);
+
+		// then is a double
+		} else if (atts[i].myType == Double) {
+			double *myDouble = (double *) &(bits[pointer]);
+			// cout << *myDouble;	
+			fprintf(outFile,"%f",*myDouble);
+
+		// then is a character string
+		} else if (atts[i].myType == String) {
+			char *myString = (char *) &(bits[pointer]);
+			// cout << myString;	
+			fprintf(outFile,"%s",myString);
+		} 
+
+		// cout << "]";
+		fprintf(outFile,"]");
+
+		// print out a comma as needed to make things pretty
+		if (i != n - 1) {
+			// cout << ", ";
+			fprintf(outFile,", ");
+		}
+	}
+
+	// cout << "\n";
+	fprintf(outFile,"\n");
+}
+
+int Record :: GetLength () {
+	
+	if (((int*)bits)[0] < 3)	return 0;
+	
+	return (((int *) bits)[1] / sizeof (int)) - 1 ;
+	
+}

@@ -6,6 +6,7 @@
 #include "File.h"
 #include "Comparison.h"
 #include "ComparisonEngine.h"
+
 #include <bits/stdc++.h>
 
 
@@ -16,6 +17,8 @@ class Comparison {
 	friend class SortedDBFile;
 	friend class DBFile;
 	friend class CNF;
+	friend class RelationalOp;
+	friend class Join;
 
 	Target operand1;
 	int whichAtt1;
@@ -54,6 +57,8 @@ class OrderMaker {
 	friend class SortedDBFile;
 	friend class DBFile;
 	friend class CNF;
+	friend class RelationalOp;
+	friend class Join;
 
 	int numAtts;	
 
@@ -94,6 +99,8 @@ class CNF {
 	friend class ComparisonEngine;
 	friend class DBFile;
 	friend class SortedDBFile;
+	friend class RelationalOp;
+	friend class Join;
 
 	Comparison orList[MAX_ANDS][MAX_ORS];
 	

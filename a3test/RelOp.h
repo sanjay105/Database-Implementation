@@ -6,6 +6,8 @@
 #include "Record.h"
 #include "Function.h"
 
+
+
 class RelationalOp {
 	public:
 	pthread_t th;

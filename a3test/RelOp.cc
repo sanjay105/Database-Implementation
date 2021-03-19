@@ -1,5 +1,7 @@
 #include "RelOp.h"
 
+int bSize = 100;
+
 void RelationalOp::WaitUntilDone (){
 	// cout<<"RelationalOp:WaitUntilDone : START"<<endl;
 	pthread_join(th,NULL);
@@ -107,7 +109,225 @@ void Join :: Run (Pipe &inPipeL, Pipe &inPipeR, Pipe &outPipe, CNF &selOp, Recor
 }
 
 void Join :: Start(){
-
+	int count = 0;
+	
+	int leftNumAtts, rightNumAtts;
+	int totalNumAtts;
+	int *attsToKeep;
+	
+	ComparisonEngine comp;
+	
+	Record *fromLeft = new Record ();
+	Record *fromRight = new Record ();
+	
+	OrderMaker leftOrder, rightOrder;
+	
+	this->selOp->GetSortOrders(leftOrder, rightOrder);
+	
+	if (leftOrder.numAtts > 0 && rightOrder.numAtts > 0) {
+		
+		// cout << "bigq Version" << endl;
+		
+		Pipe left (bSize);
+		Pipe right (bSize);
+		
+		BigQ bigqLeft (*this->inPipeL, left, leftOrder, runLen);
+		BigQ bigqRight (*this->inPipeR, right, rightOrder, runLen);
+		
+		bool isDone = false;
+		
+		if (!left.Remove (fromLeft)) {
+			
+			isDone = true;
+			
+		} else {
+			
+			leftNumAtts = fromLeft->GetLength ();
+			
+		}
+		
+		if (!isDone && !right.Remove (fromRight)) {
+			
+			isDone = true;
+			
+		} else {
+			
+			rightNumAtts = fromRight->GetLength ();
+			totalNumAtts = leftNumAtts + rightNumAtts;
+			
+			attsToKeep = new int[totalNumAtts];
+			
+			for (int i = 0; i < leftNumAtts; i++) {
+				
+				attsToKeep[i] = i;
+				
+			}
+			
+			for (int i = 0; i < rightNumAtts; i++) {
+				
+				attsToKeep[leftNumAtts + i] = i;
+				
+			}
+			
+		}
+		
+		/* Move left pipe as a reference and right as a follow up
+		 * (which means fromLeft is always bigger than or equal to 
+		 * fromRight) until one of them is done. When 
+		 * fromLeft == fromRight merge and insert.
+		 */
+		while (!isDone) {
+			
+			while (comp.Compare (fromLeft, &leftOrder, fromRight, &rightOrder) > 0) {
+				
+				if (!right.Remove (fromRight)) {
+					
+					isDone = true;
+					break;
+					
+				}
+				
+			}
+			
+			while (!isDone && comp.Compare (fromLeft, &leftOrder, fromRight, &rightOrder) < 0) {
+				
+				if (!left.Remove (fromLeft)) {
+					
+					isDone = true;
+					break;
+					
+				}
+				
+			}
+			
+			while (!isDone && comp.Compare (fromLeft, &leftOrder, fromRight, &rightOrder) == 0) {
+				
+				Record *tmp = new Record ();
+				
+				tmp->MergeRecords (
+					fromLeft,
+					fromRight,
+					leftNumAtts,
+					rightNumAtts,
+					attsToKeep,
+					totalNumAtts,
+					leftNumAtts
+				);
+				
+				// count++;
+				
+				this->outPipe->Insert (tmp);
+				
+				if (!right.Remove (fromRight)) {
+					
+					isDone = true;
+					break;
+					
+				}
+				
+			}
+			
+		}
+		
+		while (right.Remove (fromLeft));
+		while (left.Remove (fromLeft));
+		
+	} else {
+		
+		// cout << "Nested Loop Version" << endl;
+		
+		char fileName[100];
+		sprintf (fileName, "temp.tmp");
+		
+		HeapDBFile dbFile;
+		dbFile.Create (fileName);
+		
+		bool isDone = false;
+		
+		if (!this->inPipeL->Remove (fromLeft)) {
+			
+			isDone = true;
+			
+		} else {
+			
+			leftNumAtts = fromLeft->GetLength ();
+			
+		}
+		
+		if (!this->inPipeR->Remove (fromRight)) {
+			
+			isDone = true;
+			
+		} else {
+			
+			rightNumAtts = fromRight->GetLength ();
+			totalNumAtts = leftNumAtts + rightNumAtts;
+			
+			attsToKeep = new int[totalNumAtts];
+			
+			for (int i = 0; i < leftNumAtts; i++) {
+				
+				attsToKeep[i] = i;
+				
+			}
+			
+			for (int i = 0; i < rightNumAtts; i++) {
+				
+				attsToKeep[leftNumAtts + i] = i;
+				
+			}
+			
+		}
+		
+		if (!isDone) {
+			
+			do{
+				
+				dbFile.Add (*fromLeft);
+				
+			} while (this->inPipeL->Remove (fromLeft));
+			
+			do{
+				
+				dbFile.MoveFirst ();
+				
+				Record *newRec = new Record ();
+				
+				while (dbFile.GetNext (*fromLeft)) {
+					
+					if (comp.Compare (fromLeft, fromRight, this->literal,this->selOp)) {
+						
+						newRec->MergeRecords (
+							fromLeft,
+							fromRight,
+							leftNumAtts,
+							rightNumAtts,
+							attsToKeep,
+							totalNumAtts,
+							leftNumAtts
+						);
+						
+						// count++;
+						
+						this->outPipe->Insert (newRec);
+						
+					}
+					
+				}
+				
+				delete newRec;
+				
+			} while (this->inPipeR->Remove (fromRight));
+			
+		}
+		
+		dbFile.Close ();
+		remove ("temp.tmp");
+		
+	}
+	
+	this->outPipe->ShutDown ();
+	
 }
 
 void DuplicateRemoval :: Run (Pipe &inPipe, Pipe &outPipe, Schema &mySchema){
@@ -119,7 +339,27 @@ void DuplicateRemoval :: Run (Pipe &inPipe, Pipe &outPipe, Schema &mySchema){
 }
 
 void DuplicateRemoval :: Start(){
-
+	OrderMaker om(this->mySchema);
+	ComparisonEngine comp;
+	Record *prev = new Record();
+	Record *next = new Record();
+	Pipe tp(bSize);
+	BigQ bq(*this->inPipe,tp,om,runLen);
+	tp.Remove(prev);
+	while(tp.Remove(next)){
+		if(comp.Compare(prev,next,&om)){
+			this->outPipe->Insert(prev);
+			prev->Copy(next);
+		}
+	}
+	if (next->bits != NULL && !comp.Compare (next, prev, &om)) {
+		
+		this->outPipe->Insert (prev);
+		prev->Copy (next);
+		
+	}
+	
+	this->outPipe->ShutDown ();
 }
 
 void Sum :: Run (Pipe &inPipe, Pipe &outPipe, Function &computeMe){
@@ -157,7 +397,7 @@ void Sum :: Start(){
 	}else if(curAtt.myType == Double){
 		rec->ComposeRecord(sumResSchema,(to_string(runDoubleSum)+'|').c_str());
 	}
-	
+
 	this->outPipe->Insert(rec);
 	this->outPipe->ShutDown();
 
@@ -185,5 +425,9 @@ void WriteOut :: Run (Pipe &inPipe, FILE *outFile, Schema &mySchema){
 }
 
 void WriteOut :: Start(){
-
+	Record *rec = new Record();
+	while(this->inPipe->Remove(rec)){
+		rec->WriteToFile(mySchema,outFile);
+	}
+	fclose(outFile);
 }
