@@ -94,7 +94,7 @@ void Project :: Start(){
 		this->outPipe->Insert(rec);
 		cnt++;
 	}
-	cout<<"Projected "<<cnt<<" Records"<<endl;
+	// cout<<"Projected "<<cnt<<" Records"<<endl;
 	this->outPipe->ShutDown();
 }
 

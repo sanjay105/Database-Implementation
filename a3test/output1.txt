@@ -1,11 +1,3 @@
- 
-** IMPORTANT: MAKE SURE THE INFORMATION BELOW IS CORRECT **
- catalog location: 	catalog
- tpch files dir: 	/home/sanjay/Documents/Database-Implementation/git/tpch-dbgen/
- heap files dir: 	/home/sanjay/Documents/heapdbfiles/
- 
-
-test.h : SETUP DONE
 ps_partkey: [6333], ps_suppkey: [6334], ps_availqty: [3711], ps_supplycost: [1.01], ps_comment: [s use slyly. fluffily express requests wake carefully ironic packages]
 ps_partkey: [9097], ps_suppkey: [4098], ps_availqty: [3012], ps_supplycost: [1.01], ps_comment: [s the bold pinto beans cajole carefully after the slyly unusual instructions. slyly special packages above the unusual, bold packages cajole blithely even Tiresias. theodolites among the foxes are]
 ps_partkey: [20468], ps_suppkey: [469], ps_availqty: [6884], ps_supplycost: [1], ps_comment: [furiously among the slyly ironic instructions. final, unusual packages wake slyly. final accounts cajole. deposits above the i]
@@ -33,15 +25,6 @@ ps_partkey: [193981], ps_suppkey: [3982], ps_availqty: [619], ps_supplycost: [1.
 
 
 *************************************************************************************************************************************************************************
- 
-** IMPORTANT: MAKE SURE THE INFORMATION BELOW IS CORRECT **
- catalog location: 	catalog
- tpch files dir: 	/home/sanjay/Documents/Database-Implementation/git/tpch-dbgen/
- heap files dir: 	/home/sanjay/Documents/heapdbfiles/
- 
-
-test.h : SETUP DONE
-Projected 12 Records
 int: [31], string: [slate seashell steel medium moccasin], double: [931.03]
 int: [1030], string: [orange floral olive ivory lace], double: [931.03]
 int: [2029], string: [midnight brown dim violet almond], double: [931.02]
@@ -60,14 +43,6 @@ int: [11020], string: [plum khaki powder beige peru], double: [931.02]
 
 
 *************************************************************************************************************************************************************************
- 
-** IMPORTANT: MAKE SURE THE INFORMATION BELOW IS CORRECT **
- catalog location: 	catalog
- tpch files dir: 	/home/sanjay/Documents/Database-Implementation/git/tpch-dbgen/
- heap files dir: 	/home/sanjay/Documents/heapdbfiles/
- 
-
-test.h : SETUP DONE
 double: [9.24623e+07]
 
 
@@ -75,29 +50,13 @@ double: [9.24623e+07]
 
 
 *************************************************************************************************************************************************************************
- 
-** IMPORTANT: MAKE SURE THE INFORMATION BELOW IS CORRECT **
- catalog location: 	catalog
- tpch files dir: 	/home/sanjay/Documents/Database-Implementation/git/tpch-dbgen/
- heap files dir: 	/home/sanjay/Documents/heapdbfiles/
- 
-
-test.h : SETUP DONE
  query4 
 double: [4.00421e+08]
  query4 returned 1 recs 
 
 
 *************************************************************************************************************************************************************************
- 
-** IMPORTANT: MAKE SURE THE INFORMATION BELOW IS CORRECT **
- catalog location: 	catalog
- tpch files dir: 	/home/sanjay/Documents/Database-Implementation/git/tpch-dbgen/
- heap files dir: 	/home/sanjay/Documents/heapdbfiles/
- 
-
-test.h : SETUP DONE
-Projected 79080 Records
  query5 finished..output written to file ps.w.tmp
+ps.w.tmp has 9996 Records 
 
 

@@ -92,6 +92,16 @@ void init_SF_c (char *pred_str, int numpgs) {
 	SF_c.Use_n_Pages (numpgs);
 }
 
+int getRecordCountInFile(char *fp){
+    int count = 0;
+    string line;
+    ifstream file(fp);
+    
+    while (getline(file, line)) count++;
+    return count;
+}
+
+
 // select * from partsupp where ps_supplycost <1.03 
 // expected output: 31 records
 void q1 () {
@@ -251,6 +261,7 @@ void q5 () {
 	W.WaitUntilDone ();
 
 	cout << " query5 finished..output written to file " << fwpath << "\n";
+	cout << fwpath <<" has "<<getRecordCountInFile(fwpath)<<" Records "<<"\n";
 }
 
 // select sum (ps_supplycost) from supplier, partsupp 
