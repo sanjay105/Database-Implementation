@@ -77,7 +77,7 @@ void test1 () {
 		}
 		if (x < 3) {
 			//cout<<"Before ADD data"<<endl;
-			proc = add_data (tblfile,lrand48()%(int)pow(1e3,x)+(x-1)*1000, res);
+			proc = add_data (tblfile,lrand48()%(int)pow(1e6,x)+(x-1)*1000000, res);
 			//cout<<"After ADD data "<<proc<<endl;
 			tot += proc;
 			if (proc) 
