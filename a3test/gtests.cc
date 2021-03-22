@@ -109,7 +109,9 @@ int getRecordCountInFile(char *fp){
     return count;
 }
 
-
+/*
+Google test for validating the distinct relational operator function scenario. It verifies by total number of records returned by the function.
+*/
 TEST (RELATIONALOPERATIONS,DISTINCT){
     setup();
 
@@ -147,6 +149,10 @@ TEST (RELATIONALOPERATIONS,DISTINCT){
     ASSERT_EQ(getRecordCountInFile(fwpath),9996);
     cleanup ();
 }
+
+/*
+Google test for validating the select relational operator function scenario. It verifies by total number of records returned by the function.
+*/
 TEST (RELATIONALOPERATIONS,SELECT){
     setup();
 
@@ -164,6 +170,9 @@ TEST (RELATIONALOPERATIONS,SELECT){
     cleanup ();
 }
 
+/*
+Google test for validating the project relational operator function scenario. It verifies by total number of records returned by the function.
+*/
 TEST (RELATIONALOPERATIONS,PROJECT){
     setup();
 
@@ -194,6 +203,9 @@ TEST (RELATIONALOPERATIONS,PROJECT){
     cleanup ();
 }
 
+/*
+Google test for validating the sum relational operator function scenario. It verifies by total number of records returned by the function.
+*/
 TEST (RELATIONALOPERATIONS,SUM){
     setup();
 
@@ -223,6 +235,7 @@ TEST (RELATIONALOPERATIONS,SUM){
     cleanup ();
 }
 
+/* Driver function to call all gtests*/
 int main (int argc, char *argv[]) {
 	
 	testing::InitGoogleTest(&argc, argv);
