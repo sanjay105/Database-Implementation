@@ -20,16 +20,8 @@ The Queries:
 3. select sum (s_acctbal + (s_acctbal * .05)) from supplier;
 4. select sum (ps_supplycost) from supplier, partsupp where s_suppkey = ps_suppkey;
 5. select distinct ps_suppkey from partsupp where ps_supplycost < 100.11;
-6. select sum (ps_supplycost) from supplier, partsupp where s_suppkey = ps_suppkey groupby s_nationkey;
-------------------
-7: select sum(ps_supplycost) from part, supplier, partsupp 
-	where p_partkey = ps_partkey and s_suppkey = ps_suppkey and s_acctbal > 2500;
-8: select l_orderkey, l_partkey, l_suppkey from lineitem
-	where l_returnflag = 'R' and l_discount < 0.04 or 
-	l_returnflag = 'R' and l_shipmode = 'MAIL';
 
-Note: For queries 7 and 8, i have only provided a possible plan.. If you have time,  
-	I encourage you to code up this plan (will be a good experience for your next assignment!)
+
 
 Using the Driver:
 ==================
