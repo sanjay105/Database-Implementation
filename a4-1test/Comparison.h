@@ -7,12 +7,18 @@
 #include "Comparison.h"
 #include "ComparisonEngine.h"
 
+#include <bits/stdc++.h>
+
 
 // This stores an individual comparison that is part of a CNF
 class Comparison {
 
 	friend class ComparisonEngine;
+	friend class SortedDBFile;
+	friend class DBFile;
 	friend class CNF;
+	friend class RelationalOp;
+	friend class Join;
 
 	Target operand1;
 	int whichAtt1;
@@ -32,6 +38,13 @@ public:
 
 	// print to the screen
 	void Print ();
+
+	CompOperator GetCompOperator();
+
+	Target GetOperand1();
+
+	Target GetOperand2();
+
 };
 
 
@@ -41,15 +54,18 @@ class Schema;
 class OrderMaker {
 
 	friend class ComparisonEngine;
+	friend class SortedDBFile;
+	friend class DBFile;
 	friend class CNF;
+	friend class RelationalOp;
+	friend class Join;
 
-public:
-
-	int numAtts;
+	int numAtts;	
 
 	int whichAtts[MAX_ANDS];
 	Type whichTypes[MAX_ANDS];
 
+public:
 	
 
 	// creates an empty OrdermMaker
@@ -61,6 +77,16 @@ public:
 
 	// print to the screen
 	void Print ();
+
+	void PrintOrderMakerToStream (std :: ofstream &md);
+
+	int AttributeCount();
+
+	void SetAttributeCount(int numAtts);
+
+	void AddAttributeNum(int index,int attNum);
+
+	void AddAttributeType(int index,Type attType);
 };
 
 class Record;
@@ -71,6 +97,10 @@ class Record;
 class CNF {
 
 	friend class ComparisonEngine;
+	friend class DBFile;
+	friend class SortedDBFile;
+	friend class RelationalOp;
+	friend class Join;
 
 	Comparison orList[MAX_ANDS][MAX_ORS];
 	
@@ -85,7 +115,7 @@ public:
 	// only if it is impossible to determine an acceptable ordering
 	// for the given comparison
 	int GetSortOrders (OrderMaker &left, OrderMaker &right);
-
+	int GetSortOrderByOne (OrderMaker &order);
 	// print the comparison structure to the screen
 	void Print ();
 
@@ -99,6 +129,16 @@ public:
         // a relational selection over a single relation so only one schema is used
         void GrowFromParseTree (struct AndList *parseTree, Schema *mySchema, 
 		Record &literal);
+
+		int GetNumAnds();
+
+		int GetorLens(int index);
+
+		void SetorLens(int index, int val);
+
+		Comparison GetorList(int x,int y);
+
+		// void SetorList(int x,int y)
 
 };
 

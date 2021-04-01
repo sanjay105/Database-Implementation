@@ -7,7 +7,7 @@
 #include <string.h>
 #include <iostream>
 #include <stdlib.h>
-
+#include <unistd.h>
 
 
 Page :: Page () {
@@ -102,6 +102,11 @@ void Page :: ToBinary (char *bits) {
 		// and traverse the list
 		myRecs->Advance ();
 	}
+}
+
+
+int Page :: GetRecordsCnt (){
+	return numRecs;
 }
 
 
