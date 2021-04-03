@@ -7,7 +7,7 @@ Attribute :: Attribute(int num, string name){
     attributeName = name;
 }
 
-Attribute :: Attribute(Attribute &copyMe){
+Attribute :: Attribute(const Attribute &copyMe){
     uniqueTuples = copyMe.uniqueTuples;
     attributeName = copyMe.attributeName;
 }
@@ -20,30 +20,30 @@ Attribute &Attribute :: operator = (const Attribute &copyMe){
 
 Attribute :: ~Attribute(){}
 
-Relation :: Relation(){}
+RelationOp :: RelationOp(){}
 
-Relation :: Relation(int num,string name){
+RelationOp :: RelationOp(int num,string name){
     totalTuples = num;
     relationName = name;
 }
 
-Relation :: Relation(Relation &copyMe){
+RelationOp :: RelationOp(const RelationOp &copyMe){
     totalTuples = copyMe.totalTuples;
     relationName = copyMe.relationName;
 }
 
-Relation &Relation :: operator = (const Relation &copyMe){
+RelationOp &RelationOp :: operator = (const RelationOp &copyMe){
     totalTuples = copyMe.totalTuples;
     relationName = copyMe.relationName;
     return *this;
 }
 
-bool Relation :: isRelationPresent (string name){
+bool RelationOp :: isRelationPresent (string name){
     if ( (name == relationName) || (relJoint.find(name)!=relJoint.end()) )return true;
     return false;
 }
 
-Relation :: ~Relation(){}
+RelationOp :: ~RelationOp(){}
 
 
 Statistics::Statistics(){}
@@ -61,7 +61,7 @@ Statistics &Statistics:: operator=(Statistics &copyMe)
 
 Statistics::~Statistics(){}
 
-int Statistics :: GetRelationForOperand(Operand *op,char *relationName[],int numJoin,Relation &relationInfo){
+int Statistics :: GetRelationForOperand(Operand *op,char *relationName[],int numJoin,RelationOp &relationInfo){
 
     if(op == NULL || relationName == NULL)return -1;
 
@@ -108,7 +108,7 @@ double Statistics :: AndOperand(AndList *andList,char *relationName[],int numJoi
 }
 
 double Statistics :: CompOperand(ComparisonOp *compOp,char *relationName[],int numJoin){
-    Relation lRel,rRel;
+    RelationOp lRel,rRel;
     double l = 0, r = 0;
     int code = compOp->code;
     int lRes = GetRelationForOperand(compOp->left,relationName,numJoin,lRel);
@@ -152,7 +152,7 @@ double Statistics :: CompOperand(ComparisonOp *compOp,char *relationName[],int n
 void Statistics::AddRel(char *relName, int numTuples)
 {
     string relationName(relName);
-    Relation newRel(numTuples,relationName);
+    RelationOp newRel(numTuples,relationName);
     relMap[relationName] = newRel;
 }
 
@@ -165,16 +165,81 @@ void Statistics::AddAtt(char *relName, char *attName, int numDistincts)
 
 void Statistics::CopyRel(char *oldName, char *newName)
 {
-
+    string newRelation(newName),oldRelation(oldName);
+    relMap[newRelation] = relMap[oldRelation];
+    relMap[newRelation].relationName = newRelation;
+    map<string,Attribute> newAttrMap;
+    for(auto itr = relMap[newRelation].attrMap.begin(); itr != relMap[newRelation].attrMap.end(); itr++){
+        Attribute temp(itr->second);
+        temp.attributeName = newRelation+"."+itr->first;
+        newAttrMap[temp.attributeName] = temp;
+    }
+    relMap[newRelation].attrMap = newAttrMap;
 }
 	
 void Statistics::Read(char *fromWhere)
 {
+    ifstream in(fromWhere);
+    if(!in){
+        cout<<"File Doesn't exsist"<<endl;
+        exit(0);
+    }
+    relMap.clear();
+    int totalTuples, uniqueTuples, numJoint, numRelations, numAttributes;
+    string relationName, jointName, attributeName;
 
+    in >> numRelations;
+    for(int i=0;i<numRelations;i++){
+        in >> relationName;
+        in >> totalTuples;
+
+        AddRel(&relationName[0],totalTuples);
+        in >> relMap[relationName].isJoint;
+
+        if(relMap[relationName].isJoint){
+            in >> numJoint;
+            for(int j=0;j<numJoint;j++){
+                in >> jointName;
+                relMap[relationName].relJoint[jointName] = jointName;
+            }
+        }
+
+        in >> numAttributes;
+        for(int j=0;j<numAttributes;j++){
+            in >> attributeName;
+            in >> uniqueTuples;
+
+            AddAtt(&relationName[0],&attributeName[0],uniqueTuples);
+        }
+
+
+    }
 }
 
 void Statistics::Write(char *fromWhere)
 {
+    ofstream out(fromWhere);
+    
+    out << relMap.size()<<endl;
+
+    for( auto itr = relMap.begin();itr != relMap.end();itr++){
+        out << itr->second.relationName <<endl;
+        out << itr->second.totalTuples <<endl;
+        out << itr->second.isJoint <<endl;
+
+        if(itr->second.isJoint){
+            out << itr->second.relJoint.size() <<endl;
+            for( auto itr1 = itr->second.relJoint.begin(); itr1 != itr->second.relJoint.end(); ++itr1){
+                out << itr1->second <<endl;
+            }
+        }
+
+        out << itr->second.attrMap.size() <<endl;
+        for( auto itr1 = itr->second.attrMap.begin(); itr1 != itr->second.attrMap.end(); ++itr1){
+            out << itr1->second.attributeName << endl;
+            out << itr1->second.uniqueTuples << endl;
+        }
+    }
 
 }
 
@@ -185,6 +250,6 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
 
 double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numToJoin)
 {
-
+    return 800000;
 }
 

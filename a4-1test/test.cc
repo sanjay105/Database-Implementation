@@ -88,7 +88,8 @@ void q0 (){
 	Statistics s;
         char *relName[] = {"supplier","partsupp"};
 
-	
+	cout << "Q0: Statistics Object Created"<<endl;
+
 	s.AddRel(relName[0],10000);
 	s.AddAtt(relName[0], "s_suppkey",10000);
 
@@ -96,6 +97,8 @@ void q0 (){
 	s.AddAtt(relName[1], "ps_suppkey", 10000);	
 
 	char *cnf = "(s_suppkey = ps_suppkey)";
+
+	cout << "Q0: Added Relation"<<endl;
 
 	yy_scan_string(cnf);
 	yyparse();
