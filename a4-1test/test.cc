@@ -88,7 +88,7 @@ void q0 (){
 	Statistics s;
         char *relName[] = {"supplier","partsupp"};
 
-	cout << "Q0: Statistics Object Created"<<endl;
+	// cout << "Q0: Statistics Object Created"<<endl;
 
 	s.AddRel(relName[0],10000);
 	s.AddAtt(relName[0], "s_suppkey",10000);
@@ -98,11 +98,12 @@ void q0 (){
 
 	char *cnf = "(s_suppkey = ps_suppkey)";
 
-	cout << "Q0: Added Relation"<<endl;
+	// cout << "Q0: Added Relation"<<endl;
 
 	yy_scan_string(cnf);
 	yyparse();
 	double result = s.Estimate(final, relName, 2);
+	// cout<< "Q0: Result "<<result<<endl;
 	if(result!=800000)
 		cout<<"error in estimating Q1 before apply \n ";
 	s.Apply(final, relName, 2);
@@ -117,6 +118,7 @@ void q0 (){
 	yy_scan_string(cnf);
 	yyparse();
 	double dummy = s1.Estimate(final, relName, 2);
+	// cout<< "Q0: dummy "<<dummy<<endl;
 	if(fabs(dummy*3.0-result) >0.1)
 	{
 		cout<<"Read or write or last apply is not correct\n";
@@ -141,9 +143,9 @@ void q1 (){
 	yyparse();
 
 	double result = s.Estimate(final, relName, 1);
-	cout<<"Your estimation Result  " <<result;
-	cout<<"\n Correct Answer: 8.5732e+5";
-
+	// cout<<"Your estimation Result  " <<result;
+	// cout<<"\n Correct Answer: 8.5732e+5";
+	cout<<"Q1: Estimation: "<<result<<endl;
 	s.Apply(final, relName, 1);
 
 	// test write and read
@@ -182,6 +184,7 @@ void q2 (){
 	yyparse();
 	
 	double result = s.Estimate(final, relName, 3);
+	cout<<"Q2: Estimation: "<<result<<endl;
 	if(fabs(result-1500000)>0.1)
 		cout<<"error in estimating Q2\n";
 	s.Apply(final, relName, 3);
@@ -328,14 +331,14 @@ void q5 (){
 	yyparse();
 	s.Apply(final, relName, 2);
 	
-	
+	// cout<<"---------------------------"<<endl;
 	cnf = " (l_orderkey = o_orderkey) ";
 	yy_scan_string(cnf);
 	yyparse();
 
 
 	double result = s.Estimate(final, relName, 3);
-
+	cout<<"Q5: Estimation: "<<result<<endl;
 	if(fabs(result-400081)>0.1)
 		cout<<"error in estimating Q5\n";
 
@@ -501,6 +504,7 @@ void q10 (){
 	s.AddRel(relName[1],1500000);
 	s.AddAtt(relName[1], "o_orderkey",1500000);
 	s.AddAtt(relName[1], "o_custkey",150000);
+	s.AddAtt(relName[1],"o_orderdate",-1);
 	
 	s.AddRel(relName[2],6001215);
 	s.AddAtt(relName[2], "l_orderkey",1500000);
@@ -522,6 +526,7 @@ void q10 (){
 	yy_scan_string(cnf);                                                                               	yyparse();	
 	
 	double result = s.Estimate(final, relName, 4);
+	cout<<"Q10: Estimation: "<<result<<endl;
 	if(fabs(result-2000405)>0.1)
 		cout<<"error in estimating Q10\n";
 
@@ -541,7 +546,7 @@ void q11 (){
 	
 	s.AddRel(relName[0],200000);
 	s.AddAtt(relName[0], "p_partkey",200000);
-	s.AddAtt(relName[0], "p_conatiner",40);
+	s.AddAtt(relName[0], "p_container",40);
 
 	s.AddRel(relName[1],6001215);
 	s.AddAtt(relName[1], "l_partkey",200000);
@@ -554,7 +559,7 @@ void q11 (){
 	yyparse();
 	
 	double result = s.Estimate(final, relName,2);
-
+	cout<<"Q11: Estimation: "<<result<<endl;
 	if(fabs(result-21432.9)>0.5)
 		cout<<"error in estimating Q11\n";
 	s.Apply(final, relName,2);

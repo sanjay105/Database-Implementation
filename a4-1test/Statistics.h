@@ -6,7 +6,7 @@ using namespace std;
 
 class Attribute{
 	public:
-	int uniqueTuples;
+	double uniqueTuples;
 	string attributeName;
 
 	Attribute();
@@ -16,35 +16,35 @@ class Attribute{
 	~Attribute();
 };
 
-class RelationOp{
+class Relation{
 	public:
-	int totalTuples;
+	double totalTuples;
 	bool isJoint;
 	string relationName;
 
 	map<string,string> relJoint;
 	map<string,Attribute> attrMap;
 
-	RelationOp();
-	RelationOp(int num,string name);
-	RelationOp(const RelationOp &copyMe);
-	RelationOp &operator = (const RelationOp &copyMe);
+	Relation();
+	Relation(int num,string name);
+	Relation(const Relation &copyMe);
+	Relation &operator = (const Relation &copyMe);
 
 	bool isRelationPresent (string name);
-	~RelationOp();
+	~Relation();
 };
 
 class Statistics
 {
 	private:
-	int GetRelationForOperand(Operand *op,char *relationName[],int numJoin,RelationOp &relationInfo);
+	int GetRelationForOperand(Operand *op,char *relationName[],int numJoin,Relation &relationInfo);
 	double OrOperand(OrList *orList,char *relationName[],int numJoin);
 	double AndOperand(AndList *andList,char *relationName[],int numJoin);
 	double CompOperand(ComparisonOp *compOp,char *relationName[],int numJoin);
 
 
 	public:
-	map<string,RelationOp> relMap;
+	map<string,Relation> relMap;
 
 	Statistics();
 	Statistics(Statistics &copyMe);	 // Performs deep copy
@@ -62,7 +62,7 @@ class Statistics
 	void  Apply(struct AndList *parseTree, char *relNames[], int numToJoin);
 	double Estimate(struct AndList *parseTree, char **relNames, int numToJoin);
 
-	bool isRelationInMap(string name,RelationOp &rel);
+	bool isRelationInMap(string name,Relation &rel);
 
 };
 
