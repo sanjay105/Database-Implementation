@@ -2,16 +2,19 @@
 
 Attribute :: Attribute(){}
 
+// Constructor to initialize attribute with name and unique tuples
 Attribute :: Attribute(int num, string name){
     uniqueTuples = num;
     attributeName = name;
 }
 
+// Copy Constructor to perform deep copy of the attribute object
 Attribute :: Attribute(const Attribute &copyMe){
     uniqueTuples = copyMe.uniqueTuples;
     attributeName = copyMe.attributeName;
 }
 
+// Oveloading equals to operand to perform deep copy of the attribute object
 Attribute &Attribute :: operator = (const Attribute &copyMe){
     uniqueTuples = copyMe.uniqueTuples;
     attributeName = copyMe.attributeName;
@@ -22,11 +25,13 @@ Attribute :: ~Attribute(){}
 
 Relation :: Relation(){}
 
+// Constructor to initialize relation with name and unique tuples
 Relation :: Relation(int num,string name){
     totalTuples = num;
     relationName = name;
 }
 
+// Copy Constructor to perform deep copy of the relation object
 Relation :: Relation(const Relation &copyMe){
     totalTuples = copyMe.totalTuples;
     relationName = copyMe.relationName;
@@ -36,6 +41,7 @@ Relation :: Relation(const Relation &copyMe){
 
 }
 
+// Oveloading equals to operand to perform deep copy of the relation object
 Relation &Relation :: operator = (const Relation &copyMe){
     totalTuples = copyMe.totalTuples;
     relationName = copyMe.relationName;
@@ -45,6 +51,7 @@ Relation &Relation :: operator = (const Relation &copyMe){
     return *this;
 }
 
+// checks and returns if there exsists a given relation or not
 bool Relation :: isRelationPresent (string name){
     if ( (name == relationName) || (relJoint.find(name)!=relJoint.end()) )return true;
     return false;
@@ -55,11 +62,13 @@ Relation :: ~Relation(){}
 
 Statistics::Statistics(){}
 
+// Copy Constructor to perform deep copy of the statistics object
 Statistics::Statistics(Statistics &copyMe)
 {
     relMap.insert(copyMe.relMap.begin(),copyMe.relMap.end());
 }
 
+// Oveloading equals to operand to perform deep copy of the statistics object
 Statistics &Statistics:: operator=(Statistics &copyMe)
 {
     relMap.insert(copyMe.relMap.begin(),copyMe.relMap.end());
@@ -68,6 +77,7 @@ Statistics &Statistics:: operator=(Statistics &copyMe)
 
 Statistics::~Statistics(){}
 
+// Returns 0 if there exsists a relation and copies the relation object to relationInfo else return -1
 int Statistics :: GetRelationForOperand(Operand *op,char *relationName[],int numJoin,Relation &relationInfo){
 
     if(op == NULL || relationName == NULL)return -1;
@@ -86,6 +96,7 @@ int Statistics :: GetRelationForOperand(Operand *op,char *relationName[],int num
 
 }
 
+// calculates the selectivity of the given OrList
 double Statistics :: OrOperand(OrList *orList,char *relationName[],int numJoin){
     if(orList == NULL)return 0;
     double l=0,r=0;
@@ -109,6 +120,7 @@ double Statistics :: OrOperand(OrList *orList,char *relationName[],int numJoin){
 
 }
 
+// calculates the selectivity of the given AndList
 double Statistics :: AndOperand(AndList *andList,char *relationName[],int numJoin){
     if (andList == NULL)return 1;
     double l=0,r=0;
@@ -119,6 +131,7 @@ double Statistics :: AndOperand(AndList *andList,char *relationName[],int numJoi
     // return OrOperand(andList->left,relationName,numJoin) * AndOperand(andList->rightAnd,relationName,numJoin);
 }
 
+// calculates the selectivity of the given Comparison operand
 double Statistics :: CompOperand(ComparisonOp *compOp,char *relationName[],int numJoin){
     Relation lRel,rRel;
     double l = 0, r = 0;
@@ -167,7 +180,7 @@ double Statistics :: CompOperand(ComparisonOp *compOp,char *relationName[],int n
     
 }
 
-
+// Adds the relation to the current statistics object  
 void Statistics::AddRel(char *relName, int numTuples)
 {
     string relationName(relName);
@@ -176,6 +189,7 @@ void Statistics::AddRel(char *relName, int numTuples)
     //cout<<"ADDREL: relationname "<<relationName<<" relmap size "<<relMap.size()<<endl;
 }
 
+// Adds the attribute to the given relation in the current statistics object
 void Statistics::AddAtt(char *relName, char *attName, int numDistincts)
 {
     string relationName(relName),attributeName(attName);
@@ -187,6 +201,7 @@ void Statistics::AddAtt(char *relName, char *attName, int numDistincts)
     //cout<<"ADDATT: added "<<attributeName<<" attribute to "<<relationName<<" relation which has "<<newAttribute.uniqueTuples<<" tuples"<<endl;
 }
 
+// Makes a copy of the relation object with the new name
 void Statistics::CopyRel(char *oldName, char *newName)
 {
     string newRelation(newName),oldRelation(oldName);
@@ -200,7 +215,8 @@ void Statistics::CopyRel(char *oldName, char *newName)
     }
     relMap[newRelation].attrMap = newAttrMap;
 }
-	
+
+// Reads the data from the file and modifies the current statistics object 
 void Statistics::Read(char *fromWhere)
 {
     ifstream in(fromWhere);
@@ -240,6 +256,7 @@ void Statistics::Read(char *fromWhere)
     }
 }
 
+// Writes the current statistics object into a file
 void Statistics::Write(char *fromWhere)
 {
     ofstream out(fromWhere);
@@ -274,6 +291,7 @@ void Statistics::Write(char *fromWhere)
 
 }
 
+// Modifies the statistics object after applying the given cnf
 void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJoin)
 {
     int ind = 0, numJoin = 0;
@@ -335,6 +353,7 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
     //cout<<"APPLY: relmapsize after"<<relMap.size()<<endl;
 }
 
+// Estimates the result record count after applying given cnf
 double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numToJoin)
 {
     int ind = 0;

@@ -4,6 +4,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+// class to hold Attribute Information
 class Attribute{
 	public:
 	double uniqueTuples;
@@ -16,6 +17,7 @@ class Attribute{
 	~Attribute();
 };
 
+// class to hold Relation Information
 class Relation{
 	public:
 	double totalTuples;
