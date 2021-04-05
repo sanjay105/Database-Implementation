@@ -1,4 +1,4 @@
-CC = g++ -O2 -Wno-deprecated 
+CC = g++ -O2 -Wno-deprecated -w
 
 tag = -i
 
@@ -9,6 +9,12 @@ endif
 a4-1.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o Pipe.o BigQ.o Statistics.o y.tab.o lex.yy.o test.o
 	$(CC) -o a4-1.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o Pipe.o BigQ.o Statistics.o y.tab.o lex.yy.o test.o -lfl -lpthread
 	
+gtest.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o Pipe.o BigQ.o Statistics.o y.tab.o lex.yy.o gtest.o
+	$(CC) -o gtest.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o Pipe.o BigQ.o Statistics.o y.tab.o lex.yy.o gtest.cc -lfl -lpthread -lgtest
+
+gtest.o: gtest.cc
+	$(CC) -g -c gtest.cc
+
 test.o: test.cc
 	$(CC) -g -c test.cc
 

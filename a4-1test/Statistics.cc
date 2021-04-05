@@ -100,7 +100,7 @@ double Statistics :: OrOperand(OrList *orList,char *relationName[],int numJoin){
         if(strcmp(attributeName,t->left->left->value)==0)cnt++;
         t = t->rightOr;
     }
-
+    // cout<<"Count "<<cnt<<endl;
     if(cnt > 1)return cnt*l;
 
     r = OrOperand(orList->rightOr,relationName,numJoin);
@@ -248,7 +248,7 @@ void Statistics::Write(char *fromWhere)
     //cout << relMap.size()<<endl;
     for( auto itr = relMap.begin();itr != relMap.end();itr++){
         out << itr->second.relationName <<endl;
-        out << (int)itr->second.totalTuples <<endl;
+        out << itr->second.totalTuples <<endl;
         out << itr->second.isJoint <<endl;
         //cout << itr->second.relationName <<endl;
         //cout << itr->second.totalTuples <<endl;
@@ -267,7 +267,7 @@ void Statistics::Write(char *fromWhere)
         for( auto itr1 = itr->second.attrMap.begin(); itr1 != itr->second.attrMap.end(); ++itr1){
             out << itr1->second.attributeName << endl;
             //cout << itr1->second.attributeName << endl;
-            out << (int)itr1->second.uniqueTuples << endl;
+            out << itr1->second.uniqueTuples << endl;
             //cout << itr1->second.uniqueTuples << endl;
         }
     }
@@ -282,69 +282,38 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
 	Relation rel;
 	
 	while (ind < numToJoin) {
-		
 		string buffer (relNames[ind]);
-		
 		auto iter = relMap.find (buffer);
-		
 		if (iter != relMap.end ()) {
-			
 			rel = iter->second;
-			
 			names[numJoin++] = relNames[ind];
-			
 			if (rel.isJoint) {
-				
 				int size = rel.relJoint.size();
-				
 				if (size <= numToJoin) {
-					
 					for (int i = 0; i < numToJoin; i++) {
-						
 						string buf (relNames[i]);
-						
 						if (rel.relJoint.find (buf) == rel.relJoint.end () &&
 							rel.relJoint[buf] != rel.relJoint[buffer]) {
-							
-							//cout << "Cannot be joined!" << endl;
-							
 							return;
-							
 						}
-						
 					}
-					
-				} else {
-					
-					//cout << "Cannot be joined!" << endl;
-					
 				}
-			
-			} else {
-				
+			}
+            else {	
 				ind++;
-				
 				continue;
-				
 			}
 			
-		} else {
-			
-			// //cout << buffer << " Not Found!" << endl;
-			
-		}
-		
+		} 
 		ind++;
 		
 	}
 	
 	double estimation = Estimate (parseTree, names, numJoin);
-	
 	ind = 1;
 	string firstRelName (names[0]);
 	Relation firstRel = relMap[firstRelName];
 	Relation temp;
-	
 	relMap.erase (firstRelName);
 	firstRel.isJoint = true;
 	firstRel.totalTuples = estimation;
@@ -353,18 +322,13 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
 //	//cout << estimation << endl;
 	
 	while (ind < numJoin) {
-		
 		string buffer (names[ind]);
-		
 		firstRel.relJoint[buffer] = buffer;
 		temp = relMap[buffer];
 		relMap.erase (buffer);
-		
 		firstRel.attrMap.insert (temp.attrMap.begin (), temp.attrMap.end ());
 		ind++;
-		
 	}
-	
 	// relMap.insert ({firstRelName, firstRel});
     //cout<<"APPLY: relmapsize before"<<relMap.size()<<endl;
     relMap[firstRelName] = firstRel;
@@ -374,36 +338,16 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
 double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numToJoin)
 {
     int ind = 0;
-	
 	double factor = 1.0, product = 1.0;
-	
 	while (ind < numToJoin) {
-		
 		string buffer (relNames[ind]);
-		
 		if (relMap.find (buffer) != relMap.end ()) {
-			
-			//cout << buffer << " Found in Estimate!" << endl;
 			product *= (double) relMap[buffer].totalTuples;
-			
-		} else {
-			
-			//cout << buffer << " Not Found!" << endl;
-			
 		}
-		
 		ind++;
-	
 	}
-	
-	if (parseTree == NULL) {
-		
-		return product;
-		
-	}
-	
+	if (parseTree == NULL) return product;
 	factor = AndOperand (parseTree, relNames, numToJoin);
-	
 	// cout <<"Product "<< product << endl;
 	// cout <<"Factor" << factor << endl;
 	// cout << product*factor <<endl;
