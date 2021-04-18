@@ -355,7 +355,170 @@ void GroupBy :: Run (Pipe &inPipe, Pipe &outPipe, OrderMaker &groupAtts, Functio
 
 /**/
 void GroupBy :: Start(){
-
+	Type t;
+	Schema *sumSchema;
+	Attribute att;
+	stringstream ss;
+	
+	ComparisonEngine comp;
+	
+	Pipe sortPipe (bSize);
+	
+	Record *prev = new Record ();
+	Record *curr = new Record ();
+	Record *sum = new Record ();
+	Record *newRec = new Record ();
+	
+	// cout << "group by started" << endl;
+	
+	BigQ bigq (*inPipe, sortPipe, *groupAtts, runLen);
+	
+	int count = 0;
+	
+	int integerSum = 0, integerRec;
+	double doubleSum = 0.0, doubleRec;
+	
+	char *sumStr = new char[bSize];
+	
+	int numAtts = groupAtts->numAtts;
+	int *atts = groupAtts->whichAtts;
+	int *attsToKeep = new int[numAtts + 1];
+	
+	attsToKeep[0] = 0;
+	
+	for (int i = 0; i < numAtts; i++) {
+		
+		attsToKeep[i + 1] = atts[i];
+		
+	}
+	
+	if (sortPipe.Remove (prev)) {
+		
+		t = computeMe->Apply (*prev, integerRec, doubleRec);
+		
+		if (t == Int) {
+			
+			integerSum += integerRec;
+			// cout << integerRec << endl;
+			
+		} else {
+			
+			doubleSum += doubleRec;
+			// cout << doubleRec << endl;
+			
+		}
+		
+	} else {
+		
+		cout << "No output from sortPipe!" << endl;
+		
+		outPipe->ShutDown();
+		
+		delete sumStr;
+		delete sumSchema;
+		delete prev;
+		delete curr;
+		delete sum;
+		delete newRec;
+		
+		exit (-1);
+		
+	}
+	
+	att.name = "SUM";
+	att.myType = t;
+	
+	sumSchema = new Schema (NULL, 1, &att);
+	
+	// cout << "doing group by" << endl;
+	
+	while (sortPipe.Remove (curr)) {
+		
+		if (comp.Compare (prev, curr, groupAtts) != 0) {
+			// prev != curr
+			
+			if (t == Int) {
+				
+				sprintf (sumStr, "%d|", integerSum);
+				
+			} else {
+				
+				sprintf (sumStr, "%f|", doubleSum);
+				
+			}
+			
+			sum->ComposeRecord (sumSchema, sumStr);
+			newRec->MergeRecords (sum, prev, 1, prev->GetLength (), attsToKeep, numAtts + 1, 1);
+			
+			// cout << "Inserted!" << endl;
+			outPipe->Insert (newRec);
+			
+			count++;
+			// cout << count << " group done!" << endl;
+			
+			
+			doubleSum = 0.0;
+			integerSum = 0;
+			computeMe->Apply (*curr, integerRec, doubleRec);
+			
+			if (t == Int) {
+			
+				integerSum += integerRec;
+				
+			} else {
+				
+				doubleSum += doubleRec;
+				
+			}
+			
+			prev->Consume (curr);
+			
+			
+		} else {
+			// prev == curr
+			
+			computeMe->Apply (*curr, integerRec, doubleRec);
+			
+			if (t == Int) {
+				
+				integerSum += integerRec;
+				
+			} else {
+				
+				doubleSum += doubleRec;
+				
+			}
+			
+		}
+		
+	}
+	
+	if (t = Int) {
+		
+		sprintf (sumStr, "%d|", integerSum);
+		
+	} else {
+		
+		sprintf (sumStr, "%f|", doubleSum);
+		
+	}
+	
+	count++;
+	sum->ComposeRecord (sumSchema, sumStr);
+	newRec->MergeRecords (sum, prev, 1, prev->GetLength (), attsToKeep, numAtts + 1, 1);
+	outPipe->Insert (newRec);
+	// cout << count << " group done!" << endl;
+	
+	// cout << "Inserted " << count << " groups!" << endl;
+	
+	outPipe->ShutDown ();
+	
+	delete sumStr;
+	delete sumSchema;
+	delete prev;
+	delete curr;
+	delete sum;
+	delete newRec;
 }
 
 /*

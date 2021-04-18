@@ -60,14 +60,15 @@ class OrderMaker {
 	friend class RelationalOp;
 	friend class Join;
 
-	int numAtts;	
+		
 
-	int whichAtts[MAX_ANDS];
-	Type whichTypes[MAX_ANDS];
+	
 
 public:
 	
-
+	int numAtts;
+	int whichAtts[MAX_ANDS];
+	Type whichTypes[MAX_ANDS];
 	// creates an empty OrdermMaker
 	OrderMaker();
 
@@ -87,6 +88,8 @@ public:
 	void AddAttributeNum(int index,int attNum);
 
 	void AddAttributeType(int index,Type attType);
+
+	void growFromParseTree(NameList* gAtts, Schema* inputSchema); 
 };
 
 class Record;

@@ -2,12 +2,19 @@
 #ifndef SCHEMA_H
 #define SCHEMA_H
 
-#include <stdio.h>
+#include <map>
+#include <vector>
+#include <string>
+#include <cstring>
+#include <climits>
+#include <iostream>
+#include <algorithm>
 #include "Record.h"
 #include "Schema.h"
 #include "File.h"
 #include "Comparison.h"
 #include "ComparisonEngine.h"
+using namespace std;
 
 struct att_pair {
 	char *name;
@@ -32,7 +39,7 @@ class Schema {
 	friend class Record;
 
 public:
-
+	Schema();
 	// gets the set of attributes, but be careful with this, since it leads
 	// to aliasing!!!
 	Attribute *GetAtts ();
@@ -47,6 +54,10 @@ public:
 	// this finds the type of the given attribute
 	Type FindType (char *attName);
 
+	Schema (const Schema& s);
+	
+	Schema& operator= (const Schema& s);
+
 	// this reads the specification for the schema in from a file
 	Schema (char *fName, char *relName);
 
@@ -56,6 +67,16 @@ public:
 	// this constructs a sort order structure that can be used to
 	// place a lexicographic ordering on the records using this type of schema
 	int GetSortOrder (OrderMaker &order);
+
+	void Reseat (string prefix);
+	
+	void Print ();
+	
+	void GroupBySchema (Schema s, bool returnInt);
+	
+	void ProjectSchema (Schema s, vector<string> names, vector<int> &attsToKeep);
+	
+	void JoinSchema (Schema left, Schema right);
 
 	~Schema ();
 

@@ -1,27 +1,27 @@
 #include "Statistics.h"
 
-Attribute :: Attribute(){}
+AttributeOp :: AttributeOp(){}
 
-// Constructor to initialize attribute with name and unique tuples
-Attribute :: Attribute(int num, string name){
+// Constructor to initialize AttributeOp with name and unique tuples
+AttributeOp :: AttributeOp(int num, string name){
     uniqueTuples = num;
     attributeName = name;
 }
 
-// Copy Constructor to perform deep copy of the attribute object
-Attribute :: Attribute(const Attribute &copyMe){
+// Copy Constructor to perform deep copy of the AttributeOp object
+AttributeOp :: AttributeOp(const AttributeOp &copyMe){
     uniqueTuples = copyMe.uniqueTuples;
     attributeName = copyMe.attributeName;
 }
 
-// Oveloading equals to operand to perform deep copy of the attribute object
-Attribute &Attribute :: operator = (const Attribute &copyMe){
+// Oveloading equals to operand to perform deep copy of the AttributeOp object
+AttributeOp &AttributeOp :: operator = (const AttributeOp &copyMe){
     uniqueTuples = copyMe.uniqueTuples;
     attributeName = copyMe.attributeName;
     return *this;
 }
 
-Attribute :: ~Attribute(){}
+AttributeOp :: ~AttributeOp(){}
 
 Relation :: Relation(){}
 
@@ -189,16 +189,16 @@ void Statistics::AddRel(char *relName, int numTuples)
     //cout<<"ADDREL: relationname "<<relationName<<" relmap size "<<relMap.size()<<endl;
 }
 
-// Adds the attribute to the given relation in the current statistics object
+// Adds the AttributeOp to the given relation in the current statistics object
 void Statistics::AddAtt(char *relName, char *attName, int numDistincts)
 {
     string relationName(relName),attributeName(attName);
     if (numDistincts == -1){
         numDistincts = relMap[relationName].totalTuples;
     }
-    Attribute newAttribute(numDistincts,attributeName);
+    AttributeOp newAttribute(numDistincts,attributeName);
     relMap[relationName].attrMap[attributeName] = newAttribute;
-    //cout<<"ADDATT: added "<<attributeName<<" attribute to "<<relationName<<" relation which has "<<newAttribute.uniqueTuples<<" tuples"<<endl;
+    //cout<<"ADDATT: added "<<attributeName<<" AttributeOp to "<<relationName<<" relation which has "<<newAttribute.uniqueTuples<<" tuples"<<endl;
 }
 
 // Makes a copy of the relation object with the new name
@@ -207,9 +207,9 @@ void Statistics::CopyRel(char *oldName, char *newName)
     string newRelation(newName),oldRelation(oldName);
     relMap[newRelation] = relMap[oldRelation];
     relMap[newRelation].relationName = newRelation;
-    map<string,Attribute> newAttrMap;
+    map<string,AttributeOp> newAttrMap;
     for(auto itr = relMap[newRelation].attrMap.begin(); itr != relMap[newRelation].attrMap.end(); itr++){
-        Attribute temp(itr->second);
+        AttributeOp temp(itr->second);
         temp.attributeName = newRelation+"."+itr->first;
         newAttrMap[temp.attributeName] = temp;
     }

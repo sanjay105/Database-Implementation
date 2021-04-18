@@ -4,17 +4,17 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-// class to hold Attribute Information
-class Attribute{
+// class to hold AttributeOp Information
+class AttributeOp{
 	public:
 	double uniqueTuples;
 	string attributeName;
 
-	Attribute();
-	Attribute(int num, string name);
-	Attribute(const Attribute &copyMe);
-	Attribute &operator = (const Attribute &copyMe);
-	~Attribute();
+	AttributeOp();
+	AttributeOp(int num, string name);
+	AttributeOp(const AttributeOp &copyMe);
+	AttributeOp &operator = (const AttributeOp &copyMe);
+	~AttributeOp();
 };
 
 // class to hold Relation Information
@@ -25,7 +25,7 @@ class Relation{
 	string relationName;
 
 	map<string,string> relJoint;
-	map<string,Attribute> attrMap;
+	map<string,AttributeOp> attrMap;
 
 	Relation();
 	Relation(int num,string name);

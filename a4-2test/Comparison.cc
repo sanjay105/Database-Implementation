@@ -165,6 +165,17 @@ void OrderMaker :: AddAttributeType(int index,Type attType){
 	this->whichTypes[index] = attType;
 }
 
+void OrderMaker::growFromParseTree (NameList* gAtts, Schema* inputSchema) {
+	
+	for(; gAtts; gAtts = gAtts->next, numAtts++) {
+		
+		whichAtts[numAtts] = inputSchema->Find(gAtts->name);
+		whichTypes[numAtts] = inputSchema->FindType(gAtts->name);
+		
+	}
+	
+}
+
 
 int CNF :: GetSortOrderByOne (OrderMaker &order) {
 

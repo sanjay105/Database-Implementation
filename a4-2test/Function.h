@@ -44,5 +44,7 @@ public:
 
 	// applies the function to the given record and returns the result
 	Type Apply (Record &toMe, int &intResult, double &doubleResult);
+
+	bool ReturnInt();
 };
 #endif
