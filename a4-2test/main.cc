@@ -528,7 +528,7 @@ void PrintTablesAliases (TableList * tableList)	{
 }
 
 void CopyTablesNamesAndAliases (TableList *tableList, Statistics &s, vector<char *> &tableNames, AliaseMap &map)	{
-	
+	int cnt = 0;
 	while (tableList) {
 		
 		s.CopyRel (tableList->tableName, tableList->aliasAs);
@@ -538,8 +538,9 @@ void CopyTablesNamesAndAliases (TableList *tableList, Statistics &s, vector<char
 		tableNames.push_back (tableList->aliasAs);
 		
 		tableList = tableList->next;
-		
+		cnt++;
 	}
+	// cout<<"CopyTablesNamesAndAliases cnt: "<<cnt<<endl;
 	
 }
 
@@ -592,27 +593,27 @@ void PrintFunction (FuncOperator *func) {
 
 int main () {
 	
-	cout << "Input :" << endl;;
+	// cout << "Input :" << endl;;
 	yyparse ();
-	/*
-	cout << endl << "Print Boolean :" << endl;
-	PrintParseTree (boolean);
 	
-	cout << endl << "Print TableList :" << endl;
-	PrintTablesAliases (tables);
+	// cout << endl << "Print Boolean :" << endl;
+	// PrintParseTree (boolean);
 	
-	cout << endl << "Print NameList groupingAtts :" << endl;
-	PrintNameList (groupingAtts);
+	// cout << endl << "Print TableList :" << endl;
+	// PrintTablesAliases (tables);
 	
-	cout << endl << "Print NameLis1t attsToSelect:" << endl;
-	PrintNameList (attsToSelect);
+	// cout << endl << "Print NameList groupingAtts :" << endl;
+	// PrintNameList (groupingAtts);
 	
-	cout << finalFunction << endl;
-	cout << endl << "Print Function:" << endl;
-	PrintFunction (finalFunction);
+	// cout << endl << "Print NameLis1t attsToSelect:" << endl;
+	// PrintNameList (attsToSelect);
 	
-	cout << endl;
-	*/
+	// cout << finalFunction << endl;
+	// cout << endl << "Print Function:" << endl;
+	// PrintFunction (finalFunction);
+	
+	// cout << endl;
+	
 	vector<char *> tableNames;
 	vector<char *> joinOrder;
 	vector<char *> buffer (2);
@@ -623,12 +624,12 @@ int main () {
 	
 	initSchemaMap (schemaMap);
 	initStatistics (s);
-	
+	// cout<<"initStatistics DONE"<<endl;
 	CopyTablesNamesAndAliases (tables, s, tableNames, aliaseMap);
-	
+	// cout<<"CopyTablesNamesAndAliases DONE"<<endl;
 	sort (tableNames.begin (), tableNames.end ());
-	
-	int minCost = INT_MAX, cost = 0;
+	// cout<<"sort DONE"<<endl;
+	double minCost = DBL_MAX, cost = 0;
 	int counter = 1;
 	
 	do {
@@ -665,20 +666,21 @@ int main () {
 		if (cost > 0 && cost < minCost) {
 			
 			minCost = cost;
-			joinOrder = tableNames;
+			
 			
 		}
-/*		
-		char fileName[10];
-		sprintf (fileName, "t%d.txt", counter - 1);
-		temp.Write (fileName);
-*/		
+		joinOrder = tableNames;
+		
+		// char fileName[10];
+		// sprintf (fileName, "t%d.txt", counter - 1);
+		// temp.Write (fileName);
+		
 		cost = 0;
 		
 	} while (next_permutation (tableNames.begin (), tableNames.end ()));
 	
-//	cout << minCost << endl;
-	
+	// cout << "minCost :"<<minCost << endl;
+	reverse(joinOrder.begin(),joinOrder.end());
 	QueryNode *root;
 	
 	auto iter = joinOrder.begin ();
@@ -690,11 +692,20 @@ int main () {
 //	selectFileNode->file.Open (filepath);
 	selectFileNode->opened = true;
 	selectFileNode->pid = getPid ();
+
+	// cout<<"pid : "<<selectFileNode->pid<<endl;
+	// cout<<"aliaseMap: "<<aliaseMap.size()<<endl;
+	// cout<<"joinOrder: "<<joinOrder.size()<<endl;
+	// for (auto i : joinOrder){
+	// 	cout<<"joinOrder : "<<i<<endl;
+	// }
 	selectFileNode->sch = Schema (schemaMap[aliaseMap[*iter]]);
+	// cout<<"After Schema Object"<<endl;
 	selectFileNode->sch.Reseat (*iter);
-	
+	// cout<<"Reseat Done iter : "<<*iter<<endl;
+	// cout<<"GrowFromParseTree START"<<endl;
 	selectFileNode->cnf.GrowFromParseTree (boolean, &(selectFileNode->sch), selectFileNode->literal);
-	
+	// cout<<"GrowFromParseTree DONE"<<endl;
 	iter++;
 	if (iter == joinOrder.end ()) {
 		
@@ -717,6 +728,7 @@ int main () {
 		selectFileNode->sch = Schema (schemaMap[aliaseMap[*iter]]);
 		
 		selectFileNode->sch.Reseat (*iter);
+		// cout<<"Reseat Done iter : "<<*iter<<endl;
 		selectFileNode->cnf.GrowFromParseTree (boolean, &(selectFileNode->sch), selectFileNode->literal);
 		
 		joinNode->right = selectFileNode;
@@ -737,6 +749,7 @@ int main () {
 			selectFileNode->pid = getPid ();
 			selectFileNode->sch = Schema (schemaMap[aliaseMap[*iter]]);
 			selectFileNode->sch.Reseat (*iter);
+			// cout<<"Reseat Done iter : "<<*iter<<endl;
 			selectFileNode->cnf.GrowFromParseTree (boolean, &(selectFileNode->sch), selectFileNode->literal);
 			
 			joinNode = new JoinNode ();
@@ -755,11 +768,11 @@ int main () {
 		root = joinNode;
 		
 	}
-	
+	// cout<<"Here"<<endl;
 	QueryNode *temp = root;
 	
 	if (groupingAtts) {
-		
+		// cout<<"a"<<endl;
 		if (distinctFunc) {
 			
 			root = new DistinctNode ();
@@ -785,20 +798,22 @@ int main () {
 		((GroupByNode *) root)->from = temp;
 		
 	} else if (finalFunction) {
-		
+		// cout<<"b"<<endl;
 		root = new SumNode ();
 		
 		root->pid = getPid ();
+		// cout<< "Root pid : "<<root->pid<<endl;
 		((SumNode *) root)->compute.GrowFromParseTree (finalFunction, temp->sch);
-		
+		// cout<<"GrowFromParseTree"<<endl;
 		Attribute atts[2][1] = {{{"sum", Int}}, {{"sum", Double}}};
 		char *t = NULL;
+		// cout<<"Before Schema Object"<<endl;
 		root->sch = Schema (t, 1, (((SumNode *) root)->compute.ReturnInt () ? atts[0] : atts[1]));
-		
+		// cout<<"After Schema Object"<<endl;
 		((SumNode *) root)->from = temp;
 		
 	} else if (attsToSelect) {
-		
+		// cout<<"c"<<endl;
 		root = new ProjectNode ();
 		
 		vector<int> attsToKeep;

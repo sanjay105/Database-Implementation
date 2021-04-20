@@ -7,6 +7,7 @@
 int Schema :: Find (char *attName) {
 
 	for (int i = 0; i < numAtts; i++) {
+		// cout<<"Attr: "<<myAtts[i].name<<" AttName: "<<attName<<endl;
 		if (!strcmp (attName, myAtts[i].name)) {
 			return i;
 		}
@@ -39,7 +40,7 @@ Attribute *Schema :: GetAtts () {
 Schema :: Schema () : fileName (NULL), numAtts (0), myAtts (NULL) {}
 
 Schema :: Schema (char *fpath, int num_atts, Attribute *atts) {
-	fileName = strdup (fpath);
+	// fileName = strdup (fpath);
 	numAtts = num_atts;
 	myAtts = new Attribute[numAtts];
 	for (int i = 0; i < numAtts; i++ ) {
@@ -157,7 +158,7 @@ Schema :: Schema (char *fName, char *relName) {
 }
 
 Schema::Schema (const Schema& s) : fileName(0), myAtts(0) {
-	
+	// cout<<"Schema:: Copy Constructor START filename : "<<s.fileName<<endl;
 	if (s.fileName) {
 		
 		fileName = strdup(s.fileName);
@@ -173,6 +174,7 @@ Schema::Schema (const Schema& s) : fileName(0), myAtts(0) {
 		myAtts[i].name = strdup(myAtts[i].name);
 		
 	}
+	// cout<<"Schema:: Copy Constructor END"<<endl;
 	
 }
 

@@ -370,9 +370,11 @@ void CNF :: GrowFromParseTree (struct AndList *parseTree, Schema *leftSchema,
 
 				// it is not there!  So there is an error in the query
                                 } else {
-					cout << "ERROR: Could not find attribute " <<
-						myOr->left->left->value << "\n";
-					exit (1);	
+//					cout << "ERROR: Could not find attribute " <<
+//						myOr->left->left->value << "\n";
+//					exit (1);
+					whichAnd--;
+					continue;
 				}
 
 			// the next thing is to see if we have a string; if so, add it to the 
@@ -426,8 +428,10 @@ void CNF :: GrowFromParseTree (struct AndList *parseTree, Schema *leftSchema,
 
 				// it is not there!  So there is an error in the query
                                 } else {
-					cout << "ERROR: Could not find attribute " << myOr->left->right->value << "\n";
-					exit (1);	
+//					cout << "ERROR: Could not find attribute " << myOr->left->right->value << "\n";
+//					exit (1);
+					whichAnd--;
+					continue;
 				}
 
 			// the next thing is to see if we have a string; if so, add it to the 
@@ -568,9 +572,11 @@ void CNF :: GrowFromParseTree (struct AndList *parseTree, Schema *mySchema,
 
 				// it is not there!  So there is an error in the query
                                 } else {
-					cout << "ERROR: Could not find attribute " <<
-						myOr->left->left->value << "\n";
-					exit (1);	
+//					cout << "ERROR: Could not find attribute " <<
+//						myOr->left->left->value << "\n";
+//					exit (1);
+					whichAnd--;
+					continue;
 				}
 
 			// the next thing is to see if we have a string; if so, add it to the 
@@ -617,8 +623,11 @@ void CNF :: GrowFromParseTree (struct AndList *parseTree, Schema *mySchema,
 
 				// it is not there!  So there is an error in the query
                                 } else {
-					cout << "ERROR: Could not find attribute " << myOr->left->right->value << "\n";
-					exit (1);	
+//					cout << "ERROR: Could not find attribute " << myOr->left->right->value << "\n";
+//					exit (1);	
+					whichAnd--;
+					continue;
+					
 				}
 
 			// the next thing is to see if we have a string; if so, add it to the 
@@ -698,6 +707,7 @@ void CNF :: GrowFromParseTree (struct AndList *parseTree, Schema *mySchema,
 
 	remove("sdafdsfFFDSDA");
 	remove("hkljdfgkSDFSDF");
+	// cout<<endl;
 }
 
 
