@@ -10,7 +10,7 @@
 #include <iostream>
 #include <algorithm>
 #include "Record.h"
-#include "Schema.h"
+// #include "Schema.h"
 #include "File.h"
 #include "Comparison.h"
 #include "ComparisonEngine.h"

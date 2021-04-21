@@ -280,6 +280,7 @@ void CNF :: Print () {
 		else
 			cout << "\n";
 	}
+	if(numAnds==0)cout<<endl;
 }
 
 // this is a helper routine that writes out another field for the literal record and its schema

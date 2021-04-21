@@ -592,27 +592,8 @@ void PrintFunction (FuncOperator *func) {
 }
 
 int main () {
-	
-	// cout << "Input :" << endl;;
+
 	yyparse ();
-	
-	// cout << endl << "Print Boolean :" << endl;
-	// PrintParseTree (boolean);
-	
-	// cout << endl << "Print TableList :" << endl;
-	// PrintTablesAliases (tables);
-	
-	// cout << endl << "Print NameList groupingAtts :" << endl;
-	// PrintNameList (groupingAtts);
-	
-	// cout << endl << "Print NameLis1t attsToSelect:" << endl;
-	// PrintNameList (attsToSelect);
-	
-	// cout << finalFunction << endl;
-	// cout << endl << "Print Function:" << endl;
-	// PrintFunction (finalFunction);
-	
-	// cout << endl;
 	
 	vector<char *> tableNames;
 	vector<char *> joinOrder;
@@ -660,8 +641,6 @@ int main () {
 		
 		}
 		
-//		cout << endl << cost << endl;
-//		cout << counter++ << endl << endl;
 		
 		if (cost > 0 && cost < minCost) {
 			
@@ -671,15 +650,10 @@ int main () {
 		}
 		joinOrder = tableNames;
 		
-		// char fileName[10];
-		// sprintf (fileName, "t%d.txt", counter - 1);
-		// temp.Write (fileName);
-		
 		cost = 0;
 		
 	} while (next_permutation (tableNames.begin (), tableNames.end ()));
 	
-	// cout << "minCost :"<<minCost << endl;
 	reverse(joinOrder.begin(),joinOrder.end());
 	QueryNode *root;
 	
@@ -687,9 +661,6 @@ int main () {
 	SelectFileNode *selectFileNode = new SelectFileNode ();
 	
 	char filepath[50];
-//	sprintf (filepath, "bin/%s.bin",aliaseMap[*iter]);
-	
-//	selectFileNode->file.Open (filepath);
 	selectFileNode->opened = true;
 	selectFileNode->pid = getPid ();
 
@@ -719,10 +690,6 @@ int main () {
 		joinNode->left = selectFileNode;
 		
 		selectFileNode = new SelectFileNode ();
-		
-//		sprintf (filepath, "bin\\%s.bin", aliaseMap[*iter]);
-		
-//		selectFileNode->file.Open (filepath);
 		selectFileNode->opened = true;
 		selectFileNode->pid = getPid ();
 		selectFileNode->sch = Schema (schemaMap[aliaseMap[*iter]]);
@@ -743,8 +710,6 @@ int main () {
 			
 			selectFileNode = new SelectFileNode ();
 			
-//			sprintf (filepath, "bin/%s.bin", (aliaseMap[*iter]));
-//			selectFileNode->file.Open (filepath);
 			selectFileNode->opened = true;
 			selectFileNode->pid = getPid ();
 			selectFileNode->sch = Schema (schemaMap[aliaseMap[*iter]]);
@@ -830,7 +795,7 @@ int main () {
 		
 	}
 	
-	cout << "Parse Tree : " << endl;
+	// cout << "Parse Tree : " << endl;
 	root->Print ();
 	
 	return 0;
