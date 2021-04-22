@@ -12,7 +12,7 @@ a42.out: Schema.o Record.o Comparison.o ComparisonEngine.o File.o DBFile.o Pipe.
 
 
 gtest.out: Schema.o Record.o Comparison.o ComparisonEngine.o File.o DBFile.o Pipe.o BigQ.o RelOp.o Function.o Statistics.o  y.tab.o lex.yy.o 
-	$(CC) -o gtest.out Schema.o Record.o Comparison.o ComparisonEngine.o File.o DBFile.o Pipe.o BigQ.o RelOp.o Function.o Statistics.o y.tab.o lex.yy.o gtest.cc -lfl -lpthread -lgtest
+	$(CC) -o gtest.out Schema.o Record.o Comparison.o ComparisonEngine.o File.o DBFile.o Pipe.o BigQ.o RelOp.o Function.o Statistics.o y.tab.o lex.yy.o gtests.cc -lfl -lpthread -lgtest
 	
 main.o : main.cc
 	$(CC) -g -c main.cc
