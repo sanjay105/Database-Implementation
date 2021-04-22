@@ -380,21 +380,6 @@ void initStatistics (Statistics &s) {
 	
 }
 
-void PrintParseTree (struct AndList *andPointer) {
-  
-	
-}
-
-void PrintTablesAliases (TableList * tableList)	{
-	
-	while (tableList) {
-		
-		tableList = tableList->next;
-		
-	}
-	
-}
-
 void CopyTablesNamesAndAliases (TableList *tableList, Statistics &s, vector<char *> &tableNames, AliaseMap &map)	{
 	int cnt = 0;
 	while (tableList) {
@@ -411,15 +396,7 @@ void CopyTablesNamesAndAliases (TableList *tableList, Statistics &s, vector<char
 	
 }
 
-void PrintNameList(NameList *nameList) {
-	
-	while (nameList) {
-		
-		nameList = nameList->next;
-	
-	}
-	
-}
+
 
 void CopyNameList(NameList *nameList, vector<string> &names) {
 	
@@ -432,10 +409,6 @@ void CopyNameList(NameList *nameList, vector<string> &names) {
 	}
 	
 }
-
-void PrintFunction (FuncOperator *func) {
-}
-
 
 
 string func(char *input){
@@ -630,36 +603,36 @@ string func(char *input){
 TEST (EXECUTIONPLAN,TC1){
 	char *input="SELECT n.n_nationkey FROM nation AS n WHERE (n.n_name = 'UNITED STATES')";
 	string res = func(input);
-	cout<<"Query: "<<input<<endl;
-	cout<<"Execution Plan: "<<res<<endl;
+	// cout<<"Query: "<<input<<endl;
+	// cout<<"Execution Plan: "<<res<<endl;
 	ASSERT_EQ(res,"Project<-Select_File");
 }
 TEST (EXECUTIONPLAN,TC2){
 	char *input="SELECT n.n_name FROM nation AS n, region AS r WHERE (n.n_regionkey = r.r_regionkey) AND (n.n_nationkey > 5)";
 	string res = func(input);
-	cout<<"Query: "<<input<<endl;
-	cout<<"Execution Plan: "<<res<<endl;
+	// cout<<"Query: "<<input<<endl;
+	// cout<<"Execution Plan: "<<res<<endl;
 	ASSERT_EQ(res,"Project<-Select_File<-Select_File<-Join");
 }
 TEST (EXECUTIONPLAN,TC3){
 	char *input="SELECT SUM (n.n_nationkey) FROM nation AS n, region AS r WHERE (n.n_regionkey = r.r_regionkey) AND (n.n_name = 'UNITED STATES')";
 	string res = func(input);
-	cout<<"Query: "<<input<<endl;
-	cout<<"Execution Plan: "<<res<<endl;
+	// cout<<"Query: "<<input<<endl;
+	// cout<<"Execution Plan: "<<res<<endl;
 	ASSERT_EQ(res,"Sum<-Select_File<-Select_File<-Join");
 }
 TEST (EXECUTIONPLAN,TC4){
 	char *input="SELECT SUM (n.n_regionkey) FROM nation AS n, region AS r WHERE (n.n_regionkey = r.r_regionkey) AND (n.n_name = 'UNITED STATES') GROUP BY n.n_regionkey";
 	string res = func(input);
-	cout<<"Query: "<<input<<endl;
-	cout<<"Execution Plan: "<<res<<endl;
+	// cout<<"Query: "<<input<<endl;
+	// cout<<"Execution Plan: "<<res<<endl;
 	ASSERT_EQ(res,"Group_By<-Select_File<-Select_File<-Join");
 }
 TEST (EXECUTIONPLAN,TC5){
 	char *input="SELECT SUM DISTINCT (n.n_nationkey + r.r_regionkey) FROM nation AS n, region AS r, customer AS c WHERE (n.n_regionkey = r.r_regionkey) AND (n.n_nationkey = c.c_nationkey) AND (n.n_nationkey > 10) GROUP BY r.r_regionkey";
 	string res = func(input);
-	cout<<"Query: "<<input<<endl;
-	cout<<"Execution Plan: "<<res<<endl;
+	// cout<<"Query: "<<input<<endl;
+	// cout<<"Execution Plan: "<<res<<endl;
 	ASSERT_EQ(res,"Group_By<-Duplicate_Elimination<-Select_File<-Select_File<-Join<-Select_File<-Join");
 }
 

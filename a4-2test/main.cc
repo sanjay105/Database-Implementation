@@ -92,7 +92,8 @@ public:
 	}
 	
 	void Print () {
-		
+		left->Print ();
+		right->Print ();
 		cout << "*********************" << endl;
 		cout << "Join Operation" << endl;
 		cout << "Input Pipe 1 ID : " << left->pid << endl;
@@ -104,8 +105,7 @@ public:
 		cnf.Print ();
 		cout << "*********************" << endl;
 		
-		left->Print ();
-		right->Print ();
+		
 		
 	}
 	
@@ -129,7 +129,7 @@ public:
 	}
 	
 	void Print () {
-		
+		from->Print ();
 		cout << "*********************" << endl;
 		cout << "Project Operation" << endl;
 		cout << "Input Pipe ID : " << from->pid << endl;
@@ -144,7 +144,7 @@ public:
 		}
 		cout << "*********************" << endl;
 		
-		from->Print ();
+		
 		
 	}
 	
@@ -203,7 +203,7 @@ public:
 	}
 	
 	void Print () {
-		
+		from->Print ();
 		cout << "*********************" << endl;
 		cout << "Select Pipe Operation" << endl;
 		cout << "Input Pipe ID : " << from->pid << endl;
@@ -214,7 +214,7 @@ public:
 		cnf.Print ();
 		cout << "*********************" << endl;
 		
-		from->Print ();
+		
 		
 	}
 	
@@ -236,7 +236,7 @@ public:
 	}
 	
 	void Print () {
-		
+		from->Print ();
 		cout << "*********************" << endl;
 		cout << "Sum Operation" << endl;
 		cout << "Input Pipe ID : " << from->pid << endl;
@@ -245,7 +245,7 @@ public:
 		compute.Print ();
 		cout << "*********************" << endl;
 		
-		from->Print ();
+		
 		
 	}
 	
@@ -266,14 +266,14 @@ public:
 	}
 	
 	void Print () {
-		
+		from->Print ();
 		cout << "*********************" << endl;
 		cout << "Duplication Elimation Operation" << endl;
 		cout << "Input Pipe ID : " << from->pid << endl;
 		cout << "Output Pipe ID : " << pid << endl;
 		cout << "*********************" << endl;
 		
-		from->Print ();
+		
 		
 	}
 	
@@ -297,7 +297,7 @@ public:
 	}
 	
 	void Print () {
-		
+		from->Print ();
 		cout << "*********************" << endl;
 		cout << "Group By Operation" << endl;
 		cout << "Input Pipe ID : " << from->pid << endl;
@@ -310,7 +310,7 @@ public:
 		group.Print ();
 		cout << "*********************" << endl;
 		
-		from->Print ();
+		
 		
 	}
 	
@@ -333,13 +333,13 @@ public:
 	}
 	
 	void Print () {
-		
+		from->Print ();
 		cout << "*********************" << endl;
 		cout << "Write Out Operation" << endl;
 		cout << "Input Pipe ID : " << from->pid << endl;
 		cout << "*********************" << endl;
 		
-		from->Print ();
+		
 		
 	}
 	

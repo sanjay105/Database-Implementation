@@ -1,14 +1,5 @@
 TC1
 *********************
-Project Operation
-Input Pipe ID : 1
-Output Pipe ID 2
-Number Attrs Input : 4
-Number Attrs Output : 1
-Attrs To Keep :
-0
-*********************
-*********************
 Select File Operation
 Output Pipe ID 1
 Output Schema:
@@ -19,8 +10,55 @@ Output Schema:
 Select CNF:
 ( Att 1 from left record = Att 0 from literal record (String)) 
 *********************
+*********************
+Project Operation
+Input Pipe ID : 1
+Output Pipe ID 2
+Number Attrs Input : 4
+Number Attrs Output : 1
+Attrs To Keep :
+0
+*********************
 ***************************************************************************************************************************
 TC2
+*********************
+Select File Operation
+Output Pipe ID 1
+Output Schema:
+		n.n_nationkey : Int
+		n.n_name : String
+		n.n_regionkey : Int
+		n.n_comment : String
+Select CNF:
+( Att 0 from left record > Att 0 from literal record (Int)) 
+*********************
+*********************
+Select File Operation
+Output Pipe ID 3
+Output Schema:
+		r.r_regionkey : Int
+		r.r_name : String
+		r.r_comment : String
+Select CNF:
+
+*********************
+*********************
+Join Operation
+Input Pipe 1 ID : 1
+Input Pipe 2 ID : 3
+Output Pipe ID : 2
+Output Schema : 
+		n.n_nationkey : Int
+		n.n_name : String
+		n.n_regionkey : Int
+		n.n_comment : String
+		r.r_regionkey : Int
+		r.r_name : String
+		r.r_comment : String
+Join CNF : 
+( Att 2 from left record = Att 0 from right record (Int))  AND
+( Att 0 from left record > Att 0 from literal record (Int)) 
+*********************
 *********************
 Project Operation
 Input Pipe ID : 2
@@ -30,6 +68,29 @@ Number Attrs Output : 1
 Attrs To Keep :
 0
 *********************
+***************************************************************************************************************************
+TC3
+*********************
+Select File Operation
+Output Pipe ID 1
+Output Schema:
+		n.n_nationkey : Int
+		n.n_name : String
+		n.n_regionkey : Int
+		n.n_comment : String
+Select CNF:
+( Att 1 from left record = Att 0 from literal record (String)) 
+*********************
+*********************
+Select File Operation
+Output Pipe ID 3
+Output Schema:
+		r.r_regionkey : Int
+		r.r_name : String
+		r.r_comment : String
+Select CNF:
+
+*********************
 *********************
 Join Operation
 Input Pipe 1 ID : 1
@@ -45,54 +106,16 @@ Output Schema :
 		r.r_comment : String
 Join CNF : 
 ( Att 2 from left record = Att 0 from right record (Int))  AND
-( Att 0 from left record > Att 0 from literal record (Int)) 
+( Att 1 from left record = Att 0 from literal record (String)) 
 *********************
-*********************
-Select File Operation
-Output Pipe ID 1
-Output Schema:
-		n.n_nationkey : Int
-		n.n_name : String
-		n.n_regionkey : Int
-		n.n_comment : String
-Select CNF:
-( Att 0 from left record > Att 0 from literal record (Int)) 
-*********************
-*********************
-Select File Operation
-Output Pipe ID 3
-Output Schema:
-		r.r_regionkey : Int
-		r.r_name : String
-		r.r_comment : String
-Select CNF:
-
-*********************
-***************************************************************************************************************************
-TC3
 *********************
 Sum Operation
 Input Pipe ID : 2
 Output Pipe ID : 4
 Function :
 *********************
-*********************
-Join Operation
-Input Pipe 1 ID : 1
-Input Pipe 2 ID : 3
-Output Pipe ID : 2
-Output Schema : 
-		n.n_nationkey : Int
-		n.n_name : String
-		n.n_regionkey : Int
-		n.n_comment : String
-		r.r_regionkey : Int
-		r.r_name : String
-		r.r_comment : String
-Join CNF : 
-( Att 2 from left record = Att 0 from right record (Int))  AND
-( Att 1 from left record = Att 0 from literal record (String)) 
-*********************
+***************************************************************************************************************************
+TC4
 *********************
 Select File Operation
 Output Pipe ID 1
@@ -114,8 +137,23 @@ Output Schema:
 Select CNF:
 
 *********************
-***************************************************************************************************************************
-TC4
+*********************
+Join Operation
+Input Pipe 1 ID : 1
+Input Pipe 2 ID : 3
+Output Pipe ID : 2
+Output Schema : 
+		n.n_nationkey : Int
+		n.n_name : String
+		n.n_regionkey : Int
+		n.n_comment : String
+		r.r_regionkey : Int
+		r.r_name : String
+		r.r_comment : String
+Join CNF : 
+( Att 2 from left record = Att 0 from right record (Int))  AND
+( Att 1 from left record = Att 0 from literal record (String)) 
+*********************
 *********************
 Group By Operation
 Input Pipe ID : 2
@@ -134,6 +172,29 @@ OrderMaker :
 NumAtts =     1
   0:     3 Int
 *********************
+***************************************************************************************************************************
+TC5
+*********************
+Select File Operation
+Output Pipe ID 1
+Output Schema:
+		n.n_nationkey : Int
+		n.n_name : String
+		n.n_regionkey : Int
+		n.n_comment : String
+Select CNF:
+( Att 0 from left record > Att 0 from literal record (Int)) 
+*********************
+*********************
+Select File Operation
+Output Pipe ID 3
+Output Schema:
+		r.r_regionkey : Int
+		r.r_name : String
+		r.r_comment : String
+Select CNF:
+
+*********************
 *********************
 Join Operation
 Input Pipe 1 ID : 1
@@ -149,44 +210,12 @@ Output Schema :
 		r.r_comment : String
 Join CNF : 
 ( Att 2 from left record = Att 0 from right record (Int))  AND
-( Att 1 from left record = Att 0 from literal record (String)) 
+( Att 0 from left record > Att 0 from literal record (Int)) 
 *********************
 *********************
 Select File Operation
-Output Pipe ID 1
+Output Pipe ID 4
 Output Schema:
-		n.n_nationkey : Int
-		n.n_name : String
-		n.n_regionkey : Int
-		n.n_comment : String
-Select CNF:
-( Att 1 from left record = Att 0 from literal record (String)) 
-*********************
-*********************
-Select File Operation
-Output Pipe ID 3
-Output Schema:
-		r.r_regionkey : Int
-		r.r_name : String
-		r.r_comment : String
-Select CNF:
-
-*********************
-***************************************************************************************************************************
-TC5
-*********************
-Group By Operation
-Input Pipe ID : 6
-Output Pipe ID : 7
-Output Schema : 
-		sum : Int
-		n.n_nationkey : Int
-		n.n_name : String
-		n.n_regionkey : Int
-		n.n_comment : String
-		r.r_regionkey : Int
-		r.r_name : String
-		r.r_comment : String
 		c.c_custkey : Int
 		c.c_name : String
 		c.c_address : String
@@ -195,15 +224,8 @@ Output Schema :
 		c.c_acctbal : Double
 		c.c_mktsegment : String
 		c.c_comment : String
-Function : 
-OrderMaker : 
-NumAtts =     1
-  0:     5 Int
-*********************
-*********************
-Duplication Elimation Operation
-Input Pipe ID : 5
-Output Pipe ID : 6
+Select CNF:
+
 *********************
 *********************
 Join Operation
@@ -232,11 +254,16 @@ Join CNF :
 ( Att 0 from left record > Att 0 from literal record (Int)) 
 *********************
 *********************
-Join Operation
-Input Pipe 1 ID : 1
-Input Pipe 2 ID : 3
-Output Pipe ID : 2
+Duplication Elimation Operation
+Input Pipe ID : 5
+Output Pipe ID : 6
+*********************
+*********************
+Group By Operation
+Input Pipe ID : 6
+Output Pipe ID : 7
 Output Schema : 
+		sum : Int
 		n.n_nationkey : Int
 		n.n_name : String
 		n.n_regionkey : Int
@@ -244,35 +271,6 @@ Output Schema :
 		r.r_regionkey : Int
 		r.r_name : String
 		r.r_comment : String
-Join CNF : 
-( Att 2 from left record = Att 0 from right record (Int))  AND
-( Att 0 from left record > Att 0 from literal record (Int)) 
-*********************
-*********************
-Select File Operation
-Output Pipe ID 1
-Output Schema:
-		n.n_nationkey : Int
-		n.n_name : String
-		n.n_regionkey : Int
-		n.n_comment : String
-Select CNF:
-( Att 0 from left record > Att 0 from literal record (Int)) 
-*********************
-*********************
-Select File Operation
-Output Pipe ID 3
-Output Schema:
-		r.r_regionkey : Int
-		r.r_name : String
-		r.r_comment : String
-Select CNF:
-
-*********************
-*********************
-Select File Operation
-Output Pipe ID 4
-Output Schema:
 		c.c_custkey : Int
 		c.c_name : String
 		c.c_address : String
@@ -281,7 +279,9 @@ Output Schema:
 		c.c_acctbal : Double
 		c.c_mktsegment : String
 		c.c_comment : String
-Select CNF:
-
+Function : 
+OrderMaker : 
+NumAtts =     1
+  0:     5 Int
 *********************
 ***************************************************************************************************************************
