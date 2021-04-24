@@ -12,8 +12,6 @@
 #include "Statistics.h"
 #include "Comparison.h"
 
-// SELECT l.l_orderkey, s.s_suppkey, o.o_orderkey FROM lineitem AS l, supplier AS s, orders AS o WHERE (l.l_suppkey = s.s_suppkey) AND (l.l_orderkey = o.o_orderkey)
-// SELECT SUM DISTINCT (s.s_acctbal) FROM lineitem AS l, supplier AS s, orders AS o WHERE (l.l_suppkey = s.s_suppkey) AND (l.l_orderkey = o.o_orderkey) GROUP BY s.s_suppkey
 
 extern "C" {
 	int yyparse (void);   // defined in y.tab.c
@@ -58,6 +56,7 @@ enum NodeType {
 	G, SF, SP, P, D, S, GB, J, W
 };
 
+// Parent class to hold Query objects
 class QueryNode {
 
 public:
@@ -74,7 +73,7 @@ public:
 	virtual void Print () {};
 	
 };
-
+// Class to hold Join info in the Query
 class JoinNode : public QueryNode {
 
 public:
@@ -93,7 +92,8 @@ public:
 	}
 	
 	void Print () {
-		
+		left->Print ();
+		right->Print ();
 		cout << "*********************" << endl;
 		cout << "Join Operation" << endl;
 		cout << "Input Pipe 1 ID : " << left->pid << endl;
@@ -105,13 +105,12 @@ public:
 		cnf.Print ();
 		cout << "*********************" << endl;
 		
-		left->Print ();
-		right->Print ();
+		
 		
 	}
 	
 };
-
+// Class to hold Project info in the Query
 class ProjectNode : public QueryNode {
 
 public:
@@ -130,7 +129,7 @@ public:
 	}
 	
 	void Print () {
-		
+		from->Print ();
 		cout << "*********************" << endl;
 		cout << "Project Operation" << endl;
 		cout << "Input Pipe ID : " << from->pid << endl;
@@ -145,12 +144,12 @@ public:
 		}
 		cout << "*********************" << endl;
 		
-		from->Print ();
+		
 		
 	}
 	
 };
-
+// Class to hold Select File info in the Query
 class SelectFileNode : public QueryNode {
 
 public:
@@ -187,6 +186,7 @@ public:
 	
 };
 
+// Class to hold Select Pipe info in the Query
 class SelectPipeNode : public QueryNode {
 
 public:
@@ -203,7 +203,7 @@ public:
 	}
 	
 	void Print () {
-		
+		from->Print ();
 		cout << "*********************" << endl;
 		cout << "Select Pipe Operation" << endl;
 		cout << "Input Pipe ID : " << from->pid << endl;
@@ -214,12 +214,13 @@ public:
 		cnf.Print ();
 		cout << "*********************" << endl;
 		
-		from->Print ();
+		
 		
 	}
 	
 };
 
+// Class to hold Sum info in the Query
 class SumNode : public QueryNode {
 
 public:
@@ -235,7 +236,7 @@ public:
 	}
 	
 	void Print () {
-		
+		from->Print ();
 		cout << "*********************" << endl;
 		cout << "Sum Operation" << endl;
 		cout << "Input Pipe ID : " << from->pid << endl;
@@ -244,12 +245,13 @@ public:
 		compute.Print ();
 		cout << "*********************" << endl;
 		
-		from->Print ();
+		
 		
 	}
 	
 };
 
+// Class to hold Distinct info in the Query
 class DistinctNode : public QueryNode {
 
 public:
@@ -264,19 +266,20 @@ public:
 	}
 	
 	void Print () {
-		
+		from->Print ();
 		cout << "*********************" << endl;
 		cout << "Duplication Elimation Operation" << endl;
 		cout << "Input Pipe ID : " << from->pid << endl;
 		cout << "Output Pipe ID : " << pid << endl;
 		cout << "*********************" << endl;
 		
-		from->Print ();
+		
 		
 	}
 	
 };
 
+// Class to hold Group By info in the Query
 class GroupByNode : public QueryNode {
 
 public:
@@ -294,7 +297,7 @@ public:
 	}
 	
 	void Print () {
-		
+		from->Print ();
 		cout << "*********************" << endl;
 		cout << "Group By Operation" << endl;
 		cout << "Input Pipe ID : " << from->pid << endl;
@@ -307,12 +310,13 @@ public:
 		group.Print ();
 		cout << "*********************" << endl;
 		
-		from->Print ();
+		
 		
 	}
 	
 };
 
+// Class to hold Write Out info in the Query
 class WriteOutNode : public QueryNode {
 
 public:
@@ -329,13 +333,13 @@ public:
 	}
 	
 	void Print () {
-		
+		from->Print ();
 		cout << "*********************" << endl;
 		cout << "Write Out Operation" << endl;
 		cout << "Input Pipe ID : " << from->pid << endl;
 		cout << "*********************" << endl;
 		
-		from->Print ();
+		
 		
 	}
 	
@@ -344,6 +348,8 @@ public:
 typedef map<string, Schema> SchemaMap;
 typedef map<string, string> AliaseMap;
 
+
+// Creates the schema object for all the tables and inserts the objects into the map
 void initSchemaMap (SchemaMap &map) {
 	
 	map[string(region)] = Schema ("catalog", region);
@@ -357,6 +363,7 @@ void initSchemaMap (SchemaMap &map) {
 	
 }
 
+// Initializes the Statistics objects by adding all the relations and appropriate attributes
 void initStatistics (Statistics &s) {
 	
 	s.AddRel (region, nregion);
@@ -447,86 +454,8 @@ void initStatistics (Statistics &s) {
 	
 }
 
-void PrintParseTree (struct AndList *andPointer) {
-  
-	cout << "(";
-  
-	while (andPointer) {
-	  
-		struct OrList *orPointer = andPointer->left;
-      
-		while (orPointer) {
-		  
-			struct ComparisonOp *comPointer = orPointer->left;
-			
-			if (comPointer!=NULL) {
-			
-				struct Operand *pOperand = comPointer->left;
-				
-				if(pOperand!=NULL) {
-					
-					cout<<pOperand->value<<"";
-					
-				}
-				
-				switch(comPointer->code) {
-					
-					case LESS_THAN:
-						cout<<" < "; break;
-					case GREATER_THAN:
-						cout<<" > "; break;
-					case EQUALS:
-						cout<<" = "; break;
-					default:
-						cout << " unknown code " << comPointer->code;
-					
-				}
-				
-				pOperand = comPointer->right;
-				
-				if(pOperand!=NULL) {
-					
-					cout<<pOperand->value<<"";
-				}
-				
-			}
-			
-			if(orPointer->rightOr) {
-				
-				cout<<" OR ";
-				
-			}
-			
-			orPointer = orPointer->rightOr;
-			
-		}
-		
-		if(andPointer->rightAnd) {
-			
-			cout<<") AND (";
-		}
-		
-		andPointer = andPointer->rightAnd;
-		
-	}
-	
-	cout << ")" << endl;
-	
-}
 
-void PrintTablesAliases (TableList * tableList)	{
-	
-	while (tableList) {
-		
-		cout << "Table " << tableList->tableName;
-		cout <<	" is aliased to " << tableList->aliasAs << endl;
-		
-		tableList = tableList->next;
-		
-	}
-	
-}
-
+// This functions copies the table names and aliases
 void CopyTablesNamesAndAliases (TableList *tableList, Statistics &s, vector<char *> &tableNames, AliaseMap &map)	{
 	int cnt = 0;
 	while (tableList) {
@@ -544,18 +473,7 @@ void CopyTablesNamesAndAliases (TableList *tableList, Statistics &s, vector<char
 	
 }
 
-void PrintNameList(NameList *nameList) {
-	
-	while (nameList) {
-		
-		cout << nameList->name << endl;
-		
-		nameList = nameList->next;
-	
-	}
-	
-}
-
+// This functions copies the name list
 void CopyNameList(NameList *nameList, vector<string> &names) {
 	
 	while (nameList) {
@@ -568,29 +486,7 @@ void CopyNameList(NameList *nameList, vector<string> &names) {
 	
 }
 
-void PrintFunction (FuncOperator *func) {
-	
-	if (func) {
-		
-		cout << "(";
-		
-		PrintFunction (func->leftOperator);
-		
-		cout << func->leftOperand->value << " ";
-		if (func->code) {
-			
-			cout << " " << func->code << " ";
-		
-		}
-		
-		PrintFunction (func->right);
-		
-		cout << ")";
-		
-	}
-	
-}
-
+// Driver function to run A4-2
 int main () {
 
 	yyparse ();
@@ -616,38 +512,23 @@ int main () {
 	do {
 		
 		Statistics temp (s);
-		
 		auto iter = tableNames.begin ();
 		buffer[0] = *iter;
-		
-//		cout << *iter << " ";
 		iter++;
-		
 		while (iter != tableNames.end ()) {
 			
-//			cout << *iter << " ";
 			buffer[1] = *iter;
 			
 			cost += temp.Estimate (boolean, &buffer[0], 2);
 			temp.Apply (boolean, &buffer[0], 2);
 			
-			if (cost <= 0 || cost > minCost) {
-				
-				break;
-				
-			}
-			
+			if (cost <= 0 || cost > minCost) break;
 			iter++;
 		
 		}
 		
 		
-		if (cost > 0 && cost < minCost) {
-			
-			minCost = cost;
-			
-			
-		}
+		if (cost > 0 && cost < minCost) minCost = cost;
 		joinOrder = tableNames;
 		
 		cost = 0;
@@ -795,7 +676,6 @@ int main () {
 		
 	}
 	
-	// cout << "Parse Tree : " << endl;
 	root->Print ();
 	
 	return 0;
