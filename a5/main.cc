@@ -11,7 +11,9 @@
 #include "Function.h"
 #include "Statistics.h"
 #include "Comparison.h"
-
+#include <unordered_map>
+#include "Pipe.h"
+#include "RelOp.h"
 
 extern "C" {
 	int yyparse (void);   // defined in y.tab.c
@@ -46,6 +48,24 @@ const int nregion = 5;
 const int nsupplier = 10000;
 
 static int pidBuffer = 0;
+
+extern int queryType;  
+
+extern char *outputVar;
+	
+extern char *tableName;
+extern char *fileToInsert;
+
+extern struct AttrList *attsToCreate;
+extern struct NameList *attsToSort;
+
+char *catalog = "catalog";
+char *stats = "Statistics.txt";
+
+const int BUFFSIZE = 100;
+
+unordered_map<int,Pipe *> pMap;
+
 int getPid () {
 	
 	return ++pidBuffer;
@@ -61,17 +81,17 @@ class QueryNode {
 
 public:
 	
-	int pid;  // Pipe ID
-	
+	RelationalOp *relOp;
+	int pid;
 	NodeType t;
-	Schema sch;  // Ouput Schema
-	
+	Schema sch;
+
 	QueryNode ();
 	QueryNode (NodeType type) : t (type) {}
-	
-	~QueryNode () {}
+	virtual void Wait(){relOp->WaitUntilDone();}
+	virtual void Execute(unordered_map<int, Pipe *> &pMap){}
 	virtual void Print () {};
-	
+	~QueryNode () {}
 };
 // Class to hold Join info in the Query
 class JoinNode : public QueryNode {
@@ -91,6 +111,18 @@ public:
 		
 	}
 	
+	void Execute(unordered_map<int, Pipe *> &pMap){
+		pMap[pid] = new Pipe(BUFFSIZE);
+		relOp = new Join();
+
+		left->Execute(pMap);
+		right->Execute(pMap);
+		((Join *)relOp)->Run(*(pMap[left->pid]),*(pMap[right->pid]),*(pMap[pid]),cnf,literal);
+
+		left->Wait();right->Wait();
+
+	}
+
 	void Print () {
 		left->Print ();
 		right->Print ();
@@ -126,6 +158,14 @@ public:
 		
 		if (attsToKeep) delete[] attsToKeep;
 		
+	}
+
+	void Execute (unordered_map<int, Pipe *> &pMap) {
+		pMap[pid] = new Pipe(BUFFSIZE);
+		relOp = new Project();
+		from->Execute(pMap);
+		((Project *)relOp)->Run (*(pMap[from->pid]), *(pMap[pid]), attsToKeep, numIn, numOut);
+		from->Wait();
 	}
 	
 	void Print () {
@@ -170,6 +210,12 @@ public:
 		}
 		
 	}
+
+	void Execute (unordered_map<int, Pipe *> &pMap) {
+		pMap[pid] = new Pipe(BUFFSIZE);
+		relOp = new SelectFile();
+		((SelectFile *)relOp)->Run(file,*(pMap[pid]),cnf,literal);
+	}
 	
 	void Print () {
 		
@@ -200,6 +246,13 @@ public:
 		
 		if (from) delete from;
 		
+	}
+
+	void Execute (unordered_map<int, Pipe *> &pMap) {
+		pMap[pid] = new Pipe(BUFFSIZE);
+		relOp = new SelectPipe();
+		((SelectPipe *)relOp)->Run(*(pMap[from->pid]),*(pMap[pid]),cnf,literal);
+		from->Wait();
 	}
 	
 	void Print () {
@@ -234,6 +287,14 @@ public:
 		if (from) delete from;
 		
 	}
+
+	void Execute (unordered_map<int, Pipe *> &pMap) {
+		pMap[pid] = new Pipe(BUFFSIZE);
+		relOp = new Sum();
+		from->Execute(pMap);
+		((Sum*)relOp)->Run(*(pMap[from->pid]),*(pMap[pid]),compute);
+		from->Wait();
+	}
 	
 	void Print () {
 		from->Print ();
@@ -263,6 +324,14 @@ public:
 		
 		if (from) delete from;
 		
+	}
+
+	void Execute (unordered_map<int, Pipe *> &pMap) {
+		pMap[pid] = new Pipe(BUFFSIZE);
+		relOp = new DuplicateRemoval();
+		from->Execute(pMap);
+		((DuplicateRemoval*)relOp)->Run(*(pMap[from->pid]),*(pMap[pid]),sch);
+		from->Wait();
 	}
 	
 	void Print () {
@@ -296,6 +365,14 @@ public:
 		
 	}
 	
+	void Execute (unordered_map<int, Pipe *> &pMap) {
+		pMap[pid] = new Pipe(BUFFSIZE);
+		relOp = new GroupBy();
+		from->Execute(pMap);
+		((GroupBy*)relOp)->Run(*(pMap[from->pid]),*(pMap[pid]),group,compute);
+		from->Wait();
+	}
+
 	void Print () {
 		from->Print ();
 		cout << "*********************" << endl;
@@ -331,6 +408,13 @@ public:
 		if (from) delete from;
 		
 	}
+
+	void Execute (unordered_map<int, Pipe *> &pMap) {
+		relOp = new WriteOut();
+		from->Execute(pMap);
+		((WriteOut*)relOp)->Run(*(pMap[from->pid]),output,sch);
+		from->Wait();
+	}
 	
 	void Print () {
 		from->Print ();
@@ -352,15 +436,24 @@ typedef map<string, string> AliaseMap;
 // Creates the schema object for all the tables and inserts the objects into the map
 void initSchemaMap (SchemaMap &map) {
 	
-	map[string(region)] = Schema ("catalog", region);
-	map[string(part)] = Schema ("catalog", part);
-	map[string(partsupp)] = Schema ("catalog", partsupp);
-	map[string(nation)] = Schema ("catalog", nation);
-	map[string(customer)] = Schema ("catalog", customer);
-	map[string(supplier)] = Schema ("catalog", supplier);
-	map[string(lineitem)] = Schema ("catalog", lineitem);
-	map[string(orders)] = Schema ("catalog", orders);
-	
+	// map[string(region)] = Schema ("catalog", region);
+	// map[string(part)] = Schema ("catalog", part);
+	// map[string(partsupp)] = Schema ("catalog", partsupp);
+	// map[string(nation)] = Schema ("catalog", nation);
+	// map[string(customer)] = Schema ("catalog", customer);
+	// map[string(supplier)] = Schema ("catalog", supplier);
+	// map[string(lineitem)] = Schema ("catalog", lineitem);
+	// map[string(orders)] = Schema ("catalog", orders);
+	ifstream inputfs(catalog);
+	while(!inputfs.eof()){
+		char s[100];
+		inputfs.getline(s,100);
+		if(strcmp("BEGIN",s)==0){
+			inputfs.getline(s,100);
+			map[string(s)] = Schema(catalog,s);
+		}
+	}
+	inputfs.close();
 }
 
 // Initializes the Statistics objects by adding all the relations and appropriate attributes
@@ -486,197 +579,494 @@ void CopyNameList(NameList *nameList, vector<string> &names) {
 	
 }
 
-// Driver function to run A4-2
+void CopyAttrList (AttrList *attrList, vector<Attribute> &atts) {
+	
+	while (attrList) {
+		Attribute att;
+		att.name = attrList->name;
+		switch (attrList->type) {
+			case 0 :att.myType = Int;break;
+			
+			case 1 :att.myType = Double;break;
+			
+			case 2 : att.myType = String;break;
+
+			default : {}
+			
+		}	
+		atts.push_back (att);
+		attrList = attrList->next;
+	}
+}
+
+// Driver function to run A5
 int main () {
 
-	yyparse ();
+	outputVar = "STDOUT";
 	
-	vector<char *> tableNames;
-	vector<char *> joinOrder;
-	vector<char *> buffer (2);
-	
-	AliaseMap aliaseMap;
-	SchemaMap schemaMap;
-	Statistics s;
-	
-	initSchemaMap (schemaMap);
-	initStatistics (s);
-	// cout<<"initStatistics DONE"<<endl;
-	CopyTablesNamesAndAliases (tables, s, tableNames, aliaseMap);
-	// cout<<"CopyTablesNamesAndAliases DONE"<<endl;
-	sort (tableNames.begin (), tableNames.end ());
-	// cout<<"sort DONE"<<endl;
-	double minCost = DBL_MAX, cost = 0;
-	int counter = 1;
-	
-	do {
+	while (1) {
 		
-		Statistics temp (s);
-		auto iter = tableNames.begin ();
-		buffer[0] = *iter;
-		iter++;
-		while (iter != tableNames.end ()) {
+		cout << endl;
+		
+		yyparse ();
+		
+		if (queryType == 1) {
 			
-			buffer[1] = *iter;
+			// cout << "SELECT" << endl;
+			/*
+			cout << endl << "Print Boolean :" << endl;
+			PrintParseTree (boolean);
 			
-			cost += temp.Estimate (boolean, &buffer[0], 2);
-			temp.Apply (boolean, &buffer[0], 2);
+			cout << endl << "Print TableList :" << endl;
+			PrintTablesAliases (tables);
 			
-			if (cost <= 0 || cost > minCost) break;
-			iter++;
-		
-		}
-		
-		
-		if (cost > 0 && cost < minCost) minCost = cost;
-		joinOrder = tableNames;
-		
-		cost = 0;
-		
-	} while (next_permutation (tableNames.begin (), tableNames.end ()));
-	
-	reverse(joinOrder.begin(),joinOrder.end());
-	QueryNode *root;
-	
-	auto iter = joinOrder.begin ();
-	SelectFileNode *selectFileNode = new SelectFileNode ();
-	
-	char filepath[50];
-	selectFileNode->opened = true;
-	selectFileNode->pid = getPid ();
-
-	// cout<<"pid : "<<selectFileNode->pid<<endl;
-	// cout<<"aliaseMap: "<<aliaseMap.size()<<endl;
-	// cout<<"joinOrder: "<<joinOrder.size()<<endl;
-	// for (auto i : joinOrder){
-	// 	cout<<"joinOrder : "<<i<<endl;
-	// }
-	selectFileNode->sch = Schema (schemaMap[aliaseMap[*iter]]);
-	// cout<<"After Schema Object"<<endl;
-	selectFileNode->sch.Reseat (*iter);
-	// cout<<"Reseat Done iter : "<<*iter<<endl;
-	// cout<<"GrowFromParseTree START"<<endl;
-	selectFileNode->cnf.GrowFromParseTree (boolean, &(selectFileNode->sch), selectFileNode->literal);
-	// cout<<"GrowFromParseTree DONE"<<endl;
-	iter++;
-	if (iter == joinOrder.end ()) {
-		
-		root = selectFileNode;
-		
-	} else {
-		
-		JoinNode *joinNode = new JoinNode ();
-		
-		joinNode->pid = getPid ();
-		joinNode->left = selectFileNode;
-		
-		selectFileNode = new SelectFileNode ();
-		selectFileNode->opened = true;
-		selectFileNode->pid = getPid ();
-		selectFileNode->sch = Schema (schemaMap[aliaseMap[*iter]]);
-		
-		selectFileNode->sch.Reseat (*iter);
-		// cout<<"Reseat Done iter : "<<*iter<<endl;
-		selectFileNode->cnf.GrowFromParseTree (boolean, &(selectFileNode->sch), selectFileNode->literal);
-		
-		joinNode->right = selectFileNode;
-		joinNode->sch.JoinSchema (joinNode->left->sch, joinNode->right->sch);
-		joinNode->cnf.GrowFromParseTree (boolean, &(joinNode->left->sch), &(joinNode->right->sch), joinNode->literal);
-		
-		iter++;
-		
-		while (iter != joinOrder.end ()) {
+			cout << endl << "Print NameList groupingAtts :" << endl;
+			PrintNameList (groupingAtts);
 			
-			JoinNode *p = joinNode;
+			cout << endl << "Print NameList attsToSelect:" << endl;
+			PrintNameList (attsToSelect);
 			
-			selectFileNode = new SelectFileNode ();
+			cout << finalFunction << endl;
+			cout << endl << "Print Function:" << endl;
+			PrintFunction (finalFunction);
 			
+			cout << endl;
+			*/
+			vector<char *> tableNames;
+			vector<char *> joinOrder;
+			vector<char *> buffer (2);
+			
+			AliaseMap aliaseMap;
+			SchemaMap schemaMap;
+			Statistics s;
+			
+	//		cout << "!!!" << endl;
+			initSchemaMap (schemaMap);
+	//		initStatistics (s);
+			s.Read (stats);
+	//		cout << "!!!" << endl;
+			CopyTablesNamesAndAliases (tables, s, tableNames, aliaseMap);
+			
+	//		cout << tableNames.size () << endl;
+			
+	/*		for (auto iter = tableNames.begin (); iter != tableNames.end (); iter++) {
+				
+				cout << *iter << endl;
+				
+			}*/
+			
+			if (tableNames.size () > 2) {
+				
+				sort (tableNames.begin (), tableNames.end ());
+				
+				int minCost = INT_MAX, cost = 0;
+				int counter = 1;
+				
+				do {
+					
+					Statistics temp (s);
+					
+					auto iter = tableNames.begin ();
+					buffer[0] = *iter;
+					
+			//		cout << *iter << " ";
+					iter++;
+					
+					while (iter != tableNames.end ()) {
+						
+			//			cout << *iter << " ";
+						buffer[1] = *iter;
+						
+						cost += temp.Estimate (boolean, &buffer[0], 2);
+						temp.Apply (boolean, &buffer[0], 2);
+						
+						if (cost <= 0 || cost > minCost) {
+							
+							break;
+							
+						}
+						
+						iter++;
+					
+					}
+					
+			//		cout << endl << cost << endl;
+			//		cout << counter++ << endl << endl;
+					
+					if (cost > 0 && cost < minCost) {
+						
+						minCost = cost;
+						joinOrder = tableNames;
+						
+					}
+					
+			//		char fileName[10];
+			//		sprintf (fileName, "t%d.txt", counter - 1);
+			//		temp.Write (fileName);
+					
+					cost = 0;
+					
+				} while (next_permutation (tableNames.begin (), tableNames.end ()));
+			
+			} else {
+				
+				joinOrder = tableNames;
+				
+			}
+		//	cout << minCost << endl;
+			
+			QueryNode *root;
+			
+			auto iter = joinOrder.begin ();
+			SelectFileNode *selectFileNode = new SelectFileNode ();
+			
+			char filepath[50];
+		//	cout << aliaseMap[*iter] << endl;
+			sprintf (filepath, "bin/%s.bin", aliaseMap[*iter].c_str ());
+			
+			selectFileNode->file.Open (filepath);
 			selectFileNode->opened = true;
 			selectFileNode->pid = getPid ();
 			selectFileNode->sch = Schema (schemaMap[aliaseMap[*iter]]);
 			selectFileNode->sch.Reseat (*iter);
-			// cout<<"Reseat Done iter : "<<*iter<<endl;
+			
 			selectFileNode->cnf.GrowFromParseTree (boolean, &(selectFileNode->sch), selectFileNode->literal);
 			
-			joinNode = new JoinNode ();
-			
-			joinNode->pid = getPid ();
-			joinNode->left = p;
-			joinNode->right = selectFileNode;
-			
-			joinNode->sch.JoinSchema (joinNode->left->sch, joinNode->right->sch);
-			joinNode->cnf.GrowFromParseTree (boolean, &(joinNode->left->sch), &(joinNode->right->sch), joinNode->literal);
-			
 			iter++;
+			if (iter == joinOrder.end ()) {
+				
+				root = selectFileNode;
+				
+			} else {
+				
+				JoinNode *joinNode = new JoinNode ();
+				
+				joinNode->pid = getPid ();
+				joinNode->left = selectFileNode;
+				
+				selectFileNode = new SelectFileNode ();
+				
+				sprintf (filepath, "bin/%s.bin", aliaseMap[*iter].c_str ());
+				selectFileNode->file.Open (filepath);
+				selectFileNode->opened = true;
+				selectFileNode->pid = getPid ();
+				selectFileNode->sch = Schema (schemaMap[aliaseMap[*iter]]);
+				
+				selectFileNode->sch.Reseat (*iter);
+				selectFileNode->cnf.GrowFromParseTree (boolean, &(selectFileNode->sch), selectFileNode->literal);
+				
+				joinNode->right = selectFileNode;
+				joinNode->sch.JoinSchema (joinNode->left->sch, joinNode->right->sch);
+				joinNode->cnf.GrowFromParseTree (boolean, &(joinNode->left->sch), &(joinNode->right->sch), joinNode->literal);
+				
+				iter++;
+				
+				while (iter != joinOrder.end ()) {
+					
+					JoinNode *p = joinNode;
+					
+					selectFileNode = new SelectFileNode ();
+					
+					sprintf (filepath, "bin/%s.bin", (aliaseMap[*iter].c_str ()));
+					selectFileNode->file.Open (filepath);
+					selectFileNode->opened = true;
+					selectFileNode->pid = getPid ();
+					selectFileNode->sch = Schema (schemaMap[aliaseMap[*iter]]);
+					selectFileNode->sch.Reseat (*iter);
+					selectFileNode->cnf.GrowFromParseTree (boolean, &(selectFileNode->sch), selectFileNode->literal);
+					
+					joinNode = new JoinNode ();
+					
+					joinNode->pid = getPid ();
+					joinNode->left = p;
+					joinNode->right = selectFileNode;
+					
+					joinNode->sch.JoinSchema (joinNode->left->sch, joinNode->right->sch);
+					joinNode->cnf.GrowFromParseTree (boolean, &(joinNode->left->sch), &(joinNode->right->sch), joinNode->literal);
+					
+					iter++;
+					
+				}
+				
+				root = joinNode;
+				
+			}
 			
+			QueryNode *temp = root;
+			
+			if (groupingAtts) {
+				
+				if (distinctFunc) {
+					
+					root = new DistinctNode ();
+					
+					root->pid = getPid ();
+					root->sch = temp->sch;
+					((DistinctNode *) root)->from = temp;
+					
+					temp = root;
+					
+				}
+				
+				root = new GroupByNode ();
+				
+				vector<string> groupAtts;
+				CopyNameList (groupingAtts, groupAtts);
+				
+				root->pid = getPid ();
+				((GroupByNode *) root)->compute.GrowFromParseTree (finalFunction, temp->sch);
+				root->sch.GroupBySchema (temp->sch, ((GroupByNode *) root)->compute.ReturnInt ());
+				((GroupByNode *) root)->group.growFromParseTree (groupingAtts, &(root->sch));
+				
+				((GroupByNode *) root)->from = temp;
+				
+			} else if (finalFunction) {
+				
+				root = new SumNode ();
+				
+				root->pid = getPid ();
+				((SumNode *) root)->compute.GrowFromParseTree (finalFunction, temp->sch);
+				
+				Attribute atts[2][1] = {{{"sum", Int}}, {{"sum", Double}}};
+				root->sch = Schema (NULL, 1, ((SumNode *) root)->compute.ReturnInt () ? atts[0] : atts[1]);
+				
+				((SumNode *) root)->from = temp;
+				
+			} else if (attsToSelect) {
+				
+				root = new ProjectNode ();
+				
+				vector<int> attsToKeep;
+				vector<string> atts;
+				CopyNameList (attsToSelect, atts);
+				
+				// cout << atts.size () << endl;
+				
+				root->pid = getPid ();
+				root->sch.ProjectSchema (temp->sch, atts, attsToKeep);
+				
+				int *attstk = new int[attsToKeep.size ()];
+				
+				for (int i = 0; i < attsToKeep.size (); i++) {
+					
+					attstk[i] = attsToKeep[i];
+					
+				}
+				
+				((ProjectNode *) root)->attsToKeep = attstk;
+				((ProjectNode *) root)->numIn = temp->sch.GetNumAtts ();
+				((ProjectNode *) root)->numOut = atts.size ();
+				
+				((ProjectNode *) root)->from = temp;
+				
+			}
+			
+			if (strcmp (outputVar, "NONE") && strcmp (outputVar, "STDOUT")) {
+				
+				temp = new WriteOutNode ();
+				
+				temp->pid = root->pid;
+				temp->sch = root->sch;
+				((WriteOutNode *)temp)->output = fopen (outputVar, "w");
+				((WriteOutNode *)temp)->from = root;
+				
+				root = temp;
+				
+			}
+			
+			if (strcmp (outputVar, "NONE") == 0) {
+				
+				cout << "Parse Tree : " << endl;
+				root->Print ();
+			
+			} else {
+				
+				root->Execute (pMap);
+				
+			}
+			
+			int i = 0;
+			
+			if (strcmp (outputVar, "STDOUT") == 0) {
+				
+				Pipe *p = pMap[root->pid];
+				Record rec;
+				
+				while (p->Remove (&rec)) {
+					
+					i++;
+					
+					rec.Print (&(root->sch));
+					
+				}
+				
+			}
+			
+			cout << i << " records found!" << endl;
+			
+		} else if (queryType == 2) {
+			
+			if (attsToSort) {
+				
+				// PrintNameList (attsToSort);
+				
+			}
+			
+			char fileName[100];
+			char tpchName[100];
+			
+			sprintf (fileName, "bin/%s.bin", tableName);
+			sprintf (tpchName, "tpch/%s.tbl", tableName);
+			
+			DBFile file;
+			
+			vector<Attribute> attsCreate;
+			
+			CopyAttrList (attsToCreate, attsCreate);
+			
+			ofstream ofs(catalog, ifstream :: app);
+			
+			ofs << endl;
+			ofs << "BEGIN" << endl;
+			ofs << tableName << endl;
+			ofs << tpchName <<endl;
+			
+			Statistics s;
+			s.Read (stats);
+//			s.Write (stats);
+			s.AddRel (tableName, 0);
+			
+			for (auto iter = attsCreate.begin (); iter != attsCreate.end (); iter++) {
+				
+				s.AddAtt (tableName, iter->name, 0);
+				
+				ofs << iter->name << " ";
+				
+				cout << iter->myType << endl;
+				switch (iter->myType) {
+					
+					case Int : {
+						ofs << "Int" << endl;
+					} break;
+					
+					case Double : {
+						
+						ofs << "Double" << endl;
+						
+					} break;
+					
+					case String : {
+						
+						ofs << "String" << endl;
+						
+					}
+					default : {}
+					
+				}
+				
+			}
+			
+			ofs << "END" << endl;
+			s.Write (stats);
+			
+			if (!attsToSort) {
+				
+				file.Create (fileName, heap, NULL);
+			
+			} else {
+				
+				Schema sch (catalog, tableName);
+				
+				OrderMaker order;
+				
+				order.growFromParseTree (attsToSort, &sch);
+				
+				SortInfo info;
+				
+				info.o = &order;
+				info.runlen = BUFFSIZE;
+				
+				file.Create (fileName, sorted, &info);
+				
+			}
+			
+		} else if (queryType == 3) {
+			
+			char fileName[100];
+			char metaName[100];
+			char *tempFile = "tempfile.txt";
+			
+			sprintf (fileName, "bin/%s.bin", tableName);
+			sprintf (metaName, "%s.md", fileName);
+			
+			remove (fileName);
+			remove (metaName);
+			
+			ifstream ifs (catalog);
+			ofstream ofs (tempFile);
+			
+			while (!ifs.eof ()) {
+				
+				char line[100];
+				
+				ifs.getline (line, 100);
+				
+				if (strcmp (line, "BEGIN") == 0) {
+					
+					ifs.getline (line, 100);
+					
+					if (strcmp (line, tableName)) {
+						
+						ofs << endl;
+						ofs << "BEGIN" << endl;
+						ofs << line << endl;
+						
+						ifs.getline (line, 100);
+						
+						while (strcmp (line, "END")) {
+							
+							ofs << line << endl;
+							ifs.getline (line, 100);
+							
+						}
+						
+						ofs << "END" << endl;
+						
+					}
+					
+				}
+				
+			}
+			
+			ifs.close ();
+			ofs.close ();
+			
+			remove (catalog);
+			rename (tempFile, catalog);
+			remove (tempFile);
+			
+		} else if (queryType == 4) {
+			char fileName[100];
+			char tpchName[100];
+			
+			sprintf (fileName, "bin/%s.bin", tableName);
+			sprintf (tpchName, "tcph/%s", fileToInsert);
+			DBFile file;
+			Schema sch (catalog, tableName);
+			
+			sch.Print ();
+			
+			if (file.Open (fileName)) {
+				file.Load (sch, tpchName);
+				file.Close ();
+			}
+			
+		} else if (queryType == 5) {
+		} else if (queryType == 6) {
+			break;
 		}
-		
-		root = joinNode;
-		
-	}
-	// cout<<"Here"<<endl;
-	QueryNode *temp = root;
 	
-	if (groupingAtts) {
-		// cout<<"a"<<endl;
-		if (distinctFunc) {
-			
-			root = new DistinctNode ();
-			
-			root->pid = getPid ();
-			root->sch = temp->sch;
-			((DistinctNode *) root)->from = temp;
-			
-			temp = root;
-			
-		}
-		
-		root = new GroupByNode ();
-		
-		vector<string> groupAtts;
-		CopyNameList (groupingAtts, groupAtts);
-		
-		root->pid = getPid ();
-		((GroupByNode *) root)->compute.GrowFromParseTree (finalFunction, temp->sch);
-		root->sch.GroupBySchema (temp->sch, ((GroupByNode *) root)->compute.ReturnInt ());
-		((GroupByNode *) root)->group.growFromParseTree (groupingAtts, &(root->sch));
-		
-		((GroupByNode *) root)->from = temp;
-		
-	} else if (finalFunction) {
-		// cout<<"b"<<endl;
-		root = new SumNode ();
-		
-		root->pid = getPid ();
-		// cout<< "Root pid : "<<root->pid<<endl;
-		((SumNode *) root)->compute.GrowFromParseTree (finalFunction, temp->sch);
-		// cout<<"GrowFromParseTree"<<endl;
-		Attribute atts[2][1] = {{{"sum", Int}}, {{"sum", Double}}};
-		char *t = NULL;
-		// cout<<"Before Schema Object"<<endl;
-		root->sch = Schema (t, 1, (((SumNode *) root)->compute.ReturnInt () ? atts[0] : atts[1]));
-		// cout<<"After Schema Object"<<endl;
-		((SumNode *) root)->from = temp;
-		
-	} else if (attsToSelect) {
-		// cout<<"c"<<endl;
-		root = new ProjectNode ();
-		
-		vector<int> attsToKeep;
-		vector<string> atts;
-		CopyNameList (attsToSelect, atts);
-		
-		root->pid = getPid ();
-		root->sch.ProjectSchema (temp->sch, atts, attsToKeep);
-		((ProjectNode *) root)->attsToKeep = &attsToKeep[0];
-		((ProjectNode *) root)->numIn = temp->sch.GetNumAtts ();
-		((ProjectNode *) root)->numOut = atts.size ();
-		
-		((ProjectNode *) root)->from = temp;
-		
 	}
-	
-	root->Print ();
 	
 	return 0;
 	
