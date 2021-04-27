@@ -1,0 +1,57 @@
+TC1
+Query Result :
+--------------
+n.n_nationkey: [24]
+--------------
+Total records: 1
+***************************************************************************************************************************
+TC2
+Query Result :
+--------------
+n.n_name: [MOZAMBIQUE]
+n.n_name: [MOROCCO]
+n.n_name: [KENYA]
+n.n_name: [UNITED STATES]
+n.n_name: [PERU]
+n.n_name: [JAPAN]
+n.n_name: [INDONESIA]
+n.n_name: [INDIA]
+n.n_name: [CHINA]
+n.n_name: [VIETNAM]
+n.n_name: [GERMANY]
+n.n_name: [ROMANIA]
+n.n_name: [RUSSIA]
+n.n_name: [UNITED KINGDOM]
+n.n_name: [FRANCE]
+n.n_name: [IRAQ]
+n.n_name: [JORDAN]
+n.n_name: [IRAN]
+n.n_name: [SAUDI ARABIA]
+--------------
+Total records: 19
+***************************************************************************************************************************
+TC3
+Query Result :
+--------------
+sum: [24]
+--------------
+Total records: 1
+***************************************************************************************************************************
+TC4
+Query Result :
+--------------
+sum: [1], n.n_regionkey: [1]
+--------------
+Total records: 1
+***************************************************************************************************************************
+TC5
+Query Result :
+--------------
+sum: [57], r.r_regionkey: [2]
+sum: [56], r.r_regionkey: [4]
+sum: [45], r.r_regionkey: [0]
+sum: [73], r.r_regionkey: [3]
+sum: [43], r.r_regionkey: [1]
+--------------
+Total records: 5
+***************************************************************************************************************************

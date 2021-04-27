@@ -235,25 +235,52 @@ int CNF :: GetSortOrders (OrderMaker &left, OrderMaker &right) {
 		// since we are here, we have found a join attribute!!!
 		// so all we need to do is add the new comparison info into the
 		// relevant structures
+		bool bright = false,bleft = false;
 		if (orList[i][0].operand1 == Left) {
 			left.whichAtts[left.numAtts] = orList[i][0].whichAtt1;
 			left.whichTypes[left.numAtts] = orList[i][0].attType;	
+			bleft = true;
 		}	
 
 		if (orList[i][0].operand1 == Right) {
-                        right.whichAtts[right.numAtts] = orList[i][0].whichAtt1;
-                        right.whichTypes[right.numAtts] = orList[i][0].attType;
-                }
+			right.whichAtts[right.numAtts] = orList[i][0].whichAtt1;
+			right.whichTypes[right.numAtts] = orList[i][0].attType;
+			bright = true;
+		}
 
 		if (orList[i][0].operand2 == Left) {
-                        left.whichAtts[left.numAtts] = orList[i][0].whichAtt2;
-                        left.whichTypes[left.numAtts] = orList[i][0].attType;
-                }
+			left.whichAtts[left.numAtts] = orList[i][0].whichAtt2;
+			left.whichTypes[left.numAtts] = orList[i][0].attType;
+			bleft = true;
+		}
 
 		if (orList[i][0].operand2 == Right) {
-                        right.whichAtts[right.numAtts] = orList[i][0].whichAtt2;
-                        right.whichTypes[right.numAtts] = orList[i][0].attType;
-                }
+			right.whichAtts[right.numAtts] = orList[i][0].whichAtt2;
+			right.whichTypes[right.numAtts] = orList[i][0].attType;
+			bright = true;
+		}
+
+		// if(orList[i][0].operand1==Literal){
+		// 	if(bright){
+		// 		left.whichAtts[left.numAtts] = orList[i][0].whichAtt1;
+		// 		left.whichTypes[left.numAtts] = orList[i][0].attType;
+		// 	}else if(bleft) {
+		// 		right.whichAtts[right.numAtts] = orList[i][0].whichAtt1;
+		// 		right.whichTypes[right.numAtts] = orList[i][0].attType;
+		// 	}
+		// }
+
+		// if(orList[i][0].operand2==Literal){
+		// 	if(bright){
+		// 		left.whichAtts[left.numAtts] = orList[i][0].whichAtt2;
+		// 		left.whichTypes[left.numAtts] = orList[i][0].attType;
+		// 	}else if(bleft) {
+		// 		right.whichAtts[right.numAtts] = orList[i][0].whichAtt2;
+		// 		right.whichTypes[right.numAtts] = orList[i][0].attType;
+		// 	}
+		// }
+
+		if(orList[i][0].operand1==Literal||orList[i][0].operand2==Literal){left.numAtts--;right.numAtts--;}
 
 		// note that we have found two new attributes
 		left.numAtts++;

@@ -59,13 +59,35 @@ void close_lexical_parser () { yy_delete_buffer (yylex_buf_state); }
 
 "AS"			return(AS);
 
-"("			return('(');
+"DROP"          return(DROP);
 
-"<"                     return('<');
+"CREATE"        return(CREATE);
 
-">"                     return('>');
+"TABLE"         return(TABLE);
 
-"="                     return('=');
+"ON"            return(ON);
+
+"HEAP"			return(HEAP);
+
+"SORTED"		return(SORTED);
+
+"INSERT"        return(INSERT);
+
+"INTO"          return(INTO);
+
+"SET"           return(SET);
+
+"OUTPUT"        return(OUTPUT);
+
+"EXIT"          return(EXIT);
+
+"("			    return('(');
+
+"<"             return('<');
+
+">"             return('>');
+
+"="             return('=');
 
 ")"    	        	return(')');
 
@@ -120,5 +142,3 @@ void yyerror(char *s) {
 int yywrap(void){
   return 1;
 }
-
-

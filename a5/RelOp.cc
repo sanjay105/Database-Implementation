@@ -137,6 +137,10 @@ void Join :: Run (Pipe &inPipeL, Pipe &inPipeR, Pipe &outPipe, CNF &selOp, Recor
 	pthread_create(&th,NULL,performOperation, (void *) this);
 }
 
+Attribute IA = {"int", Int};
+Attribute SA = {"string", String};
+Attribute DA = {"double", Double};
+
 /*
 This function joins all the records from the inpipe left and inpipe right which satisfies the given CNF and inserts the resultant records into the out pipe.
 */
@@ -162,7 +166,21 @@ void Join :: Start(){
 		BigQ bigqLeft (*this->inPipeL, left, leftOrder, runLen);
 		BigQ bigqRight (*this->inPipeR, right, rightOrder, runLen);
 		bool isDone = false;
-		
+		// Schema na("catalog","nation");
+		// Schema re("catalog","region");
+		// cout<<endl;
+		// left->Print(&re);
+		// cout<<"|"<<endl;
+		// right->Print(&na);	
+		// cout<<endl;
+		// while(left.Remove(fromLeft)){
+		// 	cout<<"Left"<<endl;
+		// 	fromLeft->Print(&re);
+		// }
+		// while(right.Remove(fromRight)){
+		// 	cout<<"Right"<<endl;
+		// 	fromRight->Print(&na);
+		// }
 		if (!left.Remove (fromLeft)) {
 			isDone = true;
 		} else {
@@ -196,9 +214,22 @@ void Join :: Start(){
 				}
 			}
 			while (!isDone && comp.Compare (fromLeft, &leftOrder, fromRight, &rightOrder) == 0) {
+				// Attribute att3[] = {IA, SA,SA,IA,SA,IA,SA };
+				
+				// Schema out_sch ("out_sch", 7, att3);
 				Record *tmp = new Record ();
 				tmp->MergeRecords (fromLeft,fromRight,leftNumAtts,rightNumAtts,attsToKeep,totalNumAtts,leftNumAtts);
+				// tmp->Print(&out_sch);
+				count++;
 				this->outPipe->Insert (tmp);
+				// cout<<"MEOE " <<totalNumAtts<<endl;
+				
+				// Schema o_sch("o_sch",3,att3);
+				// fromLeft->Print(&o_sch);
+				// Attribute att4[] = {IA,SA,IA,SA };
+				// Schema o1_sch("o1_sch",4,att4);
+				// fromRight->Print(&o1_sch);
+				// tmp->Print(&out_sch);
 				if (!right.Remove (fromRight)) {
 					isDone = true;
 					break;
@@ -242,6 +273,7 @@ void Join :: Start(){
 				while (dbFile.GetNext (*fromLeft)) {
 					if (comp.Compare (fromLeft, fromRight, this->literal,this->selOp)) {
 						newRec->MergeRecords (fromLeft,fromRight,leftNumAtts,rightNumAtts,attsToKeep,totalNumAtts,leftNumAtts);
+						count++;
 						this->outPipe->Insert (newRec);
 					}
 				}
@@ -251,7 +283,7 @@ void Join :: Start(){
 		dbFile.Close ();
 		remove ("temp.tmp");
 	}
-	
+	// cout << "Total records in Join: " << count << endl;
 	this->outPipe->ShutDown ();
 	
 }
@@ -276,21 +308,25 @@ void DuplicateRemoval :: Start(){
 	Record *prev = new Record();
 	Record *next = new Record();
 	Pipe tp(bSize);
+	int count = 0, remover = 0;
 	BigQ bq(*this->inPipe,tp,om,runLen);
 	tp.Remove(prev);
+	remover++;
 	while(tp.Remove(next)){
+		remover++;
 		if(comp.Compare(prev,next,&om)){
+			count++;
 			this->outPipe->Insert(prev);
 			prev->Copy(next);
 		}
 	}
 	if (next->bits != NULL && !comp.Compare (next, prev, &om)) {
-		
+		count++;
 		this->outPipe->Insert (prev);
 		prev->Copy (next);
 		
 	}
-	
+	// cout << "Number of distinct records: " << count <<  " -> " << remover <<endl;
 	this->outPipe->ShutDown ();
 }
 
@@ -373,7 +409,7 @@ void GroupBy :: Start(){
 	
 	BigQ bigq (*inPipe, sortPipe, *groupAtts, runLen);
 	
-	int count = 0;
+	int count = 0, counter = 0;
 	
 	int integerSum = 0, integerRec;
 	double doubleSum = 0.0, doubleRec;
@@ -382,18 +418,23 @@ void GroupBy :: Start(){
 	
 	int numAtts = groupAtts->numAtts;
 	int *atts = groupAtts->whichAtts;
+	// groupAtts->Print();
 	int *attsToKeep = new int[numAtts + 1];
 	
 	attsToKeep[0] = 0;
-	
 	for (int i = 0; i < numAtts; i++) {
 		
-		attsToKeep[i + 1] = atts[i];
+		attsToKeep[i + 1] = atts[i]-1;
+		// cout<<"Atts[i] "<<atts[i]<<endl;
 		
 	}
-	
+	atts[1]=0;
+	// Schema na("catalog","nation");
 	if (sortPipe.Remove (prev)) {
-		
+		// prev->Print(&na);
+		// Attribute att3[] = {IA, SA,SA,IA,SA,IA,SA };
+		// Schema out_sch ("out_sch", 7, att3);
+		// prev->Print(&out_sch);
 		t = computeMe->Apply (*prev, integerRec, doubleRec);
 		
 		if (t == Int) {
@@ -407,6 +448,7 @@ void GroupBy :: Start(){
 			// cout << doubleRec << endl;
 			
 		}
+		// cout<<"SUM END "<<integerSum<<" "<<doubleSum<<endl;
 		
 	} else {
 		
@@ -433,7 +475,7 @@ void GroupBy :: Start(){
 	// cout << "doing group by" << endl;
 	
 	while (sortPipe.Remove (curr)) {
-		
+		// cout<<"Inside While"<<endl;
 		if (comp.Compare (prev, curr, groupAtts) != 0) {
 			// prev != curr
 			
@@ -492,8 +534,7 @@ void GroupBy :: Start(){
 		}
 		
 	}
-	
-	if (t = Int) {
+	if (t == Int) {
 		
 		sprintf (sumStr, "%d|", integerSum);
 		
@@ -505,9 +546,17 @@ void GroupBy :: Start(){
 	
 	count++;
 	sum->ComposeRecord (sumSchema, sumStr);
+	// sum->Print(sumSchema);
+	// for(int i=0;i<numAtts+1;i++){
+	// 			cout<<"RRR "<<attsToKeep[i]<<endl;
+	// 		}
 	newRec->MergeRecords (sum, prev, 1, prev->GetLength (), attsToKeep, numAtts + 1, 1);
+	// Attribute at3[]={IA,IA};
+	// Schema aaa("a",2,at3);
+	// cout<<"Before Print"<<endl;
+	// newRec->Print(&aaa);
+	// cout<<"After Print"<<endl;
 	outPipe->Insert (newRec);
-	// cout << count << " group done!" << endl;
 	
 	// cout << "Inserted " << count << " groups!" << endl;
 	

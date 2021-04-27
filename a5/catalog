@@ -99,4 +99,3 @@ l_shipinstruct String
 l_shipmode String
 l_comment String
 END
-
