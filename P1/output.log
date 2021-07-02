@@ -219,4 +219,4 @@ tpch1g=# select * from lineitem where l_orderkey > 100 and l_orderkey < 1000 and
 (2 rows)
 
 Time: 17641.131 ms
-
+sanjay
